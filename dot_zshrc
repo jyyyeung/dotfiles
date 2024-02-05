@@ -88,7 +88,7 @@ autoload -Uz compinit && compinit
 autoload -U bashcompinit
 bashcompinit
 
- 
+
 # NOTE: put here because asliases file hopes to overwrite some aliases defined by omz
 # Oh-My-Zsh plugins rely on stuff in its lib directory
 ZSH=$ZPLUGINDIR/ohmyzsh
@@ -113,7 +113,7 @@ source $HOME/.aliases
 source $HOME/.functions 
 #  loads exports                                            
 source $HOME/.exports
- 
+
 #  ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
 
 #  ╭──────────────────────────────────────────────────────────╮
@@ -154,9 +154,6 @@ plugins=(
 #  ╰──────────────────────────────────────────────────────────╯
 #   kjhaber/tm.zsh
   # "mbenford/zsh-tmux-auto-title"
-
-  # TODO: Move from stow to dotbare???
-#   kazhala/dotbare
 
   #"wting/autojump"
   djui/alias-tips # suggest alias when you typed the entire command
@@ -321,7 +318,7 @@ zstyle ':completion:*:corrections' format '%B%d (errors: %e)%b'
 #zstyle ':completion:*:git-checkout:*' sort false # disable sort when completing `git checkout`             
 zstyle ':completion:*:descriptions' format '[%d]' # set descriptions format to enable group support
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS} # set list-colors to enable filename colorizing
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'exa -1 --color=always $realpath' # preview directory's content with exa when completing cd                                
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'lsd -1 --color=always $realpath' # preview directory's content with exa when completing cd                                
 zstyle ':fzf-tab:*' switch-group '[' ']' # switch group using `[` and `]`     
 
 # give a preview of commandline arguments when completing `kill`
@@ -493,19 +490,17 @@ if ! (( $+commands[go] )); then
 fi
 
 #  ╭──────────────────────────────────────────────────────────╮
-#  │                           Exa                            │
+#  │                           lsd                            │
 #  ╰──────────────────────────────────────────────────────────╯
 
-if ! (( $+commands[exa] )); then
-    # exa is not installed
+if ! (( $+commands[lsd] )); then
+    # lsd is not installed
     if (( $+commands[brew] )); then 
-        brew install exa
-    elif [ -d $ASDF_DIR ]; then 
-        asdf plugin add exa https://github.com/nyrst/asdf-exa.git
-        asdf install exa latest
-        asdf global exa latest
+        brew install lsd
+    elif (( $+commands[yay] )); then 
+        yay -S lsd
     elif (( $+commands[apt] )); then 
-	sudo apt install exa -y
+	sudo apt install lsd -y 
     fi
 fi
 
@@ -513,8 +508,6 @@ fi
 export WORKON_HOME=~/.virtualenvs
 #. $(asdf where python)/bin/virtualenvwrapper.sh
 # . $(which virtualenvwrapper.sh)
-
-
 
 # install zathura 
 #
@@ -569,12 +562,12 @@ export PATH
 
 #[[ -s /etc/profile.d/autojump.zsh ]] && source /etc/profile.d/autojump.zsh
 
-if ! (( $+commands[fuck] )); then
-    if (( $+commands[apt] )); then
-        sudo apt install thefuck
-    fi
-    eval $(thefuck --alias)
-fi
+; if ! (( $+commands[fuck] )); then
+;     if (( $+commands[apt] )); then
+;         sudo apt install thefuck
+;     fi
+;     eval $(thefuck --alias)
+; fi
 # eval "$(fasd --init auto)"
 # source "${XDG_CONFIG_HOME:-$HOME/.config}/asdf-direnv/zshrc"
 
