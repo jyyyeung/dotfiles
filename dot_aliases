@@ -23,9 +23,9 @@ alias wa="tungsten"
 alias wolfram="tungsten"
 
 # alias ls='colorls'
-alias ll="lsd -l -g --icon -a"
-alias ls="lsd --icon -a"
-alias lt="lsd --tree --icon -a -I '.git|__pycache__|.mypy_cache|.ipynb_checkpoints'"
+alias ll="lsd -l -g  -a"
+alias ls="lsd -a"
+alias lt="lsd --tree -a -I '.git|__pycache__|.mypy_cache|.ipynb_checkpoints'"
 
 alias h='history'
 alias grep='grep --color'
