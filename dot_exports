@@ -70,4 +70,5 @@ if [[ uname == 'Darwin' ]]; then
 
 fi
 
-
+# https://github.com/SijanC147/macprefs
+export MACPREFS_BACKUP_DIR="$HOME/Library/CloudStorage/OneDrive-lqwq/Apps/macprefs"
