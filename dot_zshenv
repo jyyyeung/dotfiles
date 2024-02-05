@@ -1,0 +1,4 @@
+
+# Begin added by argcomplete
+fpath=( /Users/jyyyeung/Library/Python/3.9/lib/python/site-packages/argcomplete/bash_completion.d "${fpath[@]}" )
+# End added by argcomplete

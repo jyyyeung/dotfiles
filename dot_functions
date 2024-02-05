@@ -1,0 +1,344 @@
+# declare a simple plugin-clone function, leaving the user to source plugins themselves
+function plugin-clone {
+  local repo plugdir initfile
+  ZPLUGINDIR=${ZPLUGINDIR:-${ZDOTDIR:-$HOME/.config/zsh}/plugins}
+  for repo in $@; do
+    plugdir=$ZPLUGINDIR/${repo:t}
+    initfile=$plugdir/${repo:t}.plugin.zsh
+    if [[ ! -d $plugdir ]]; then
+      echo "Cloning $repo..."
+      git clone -q --depth 1 --recursive --shallow-submodules https://github.com/$repo $plugdir
+    fi
+    if [[ ! -e $initfile ]]; then
+      local -a initfiles=($plugdir/*.plugin.{z,}sh(N) $plugdir/*.{z,}sh{-theme,}(N))
+      (( $#initfiles )) && ln -sf "${initfiles[1]}" "$initfile"
+    fi
+  done
+}
+
+# now, plugin-source is a separate thing
+function plugin-source {
+  local plugdir
+  ZPLUGINDIR=${ZPLUGINDIR:-${ZDOTDIR:-$HOME/.config/zsh}/plugins}
+  for plugdir in $@; do
+    [[ $plugdir = /* ]] || plugdir=$ZPLUGINDIR/$plugdir
+    fpath+=$plugdir
+    local initfile=$plugdir/${plugdir:t}.plugin.zsh
+    (( $+functions[zsh-defer] )) && zsh-defer . $initfile || . $initfile
+  done
+}
+
+# clone a plugin, identify its init file, source it, and add it to your fpath
+function plugin-load {
+  local repo plugdir initfile
+  ZPLUGINDIR=${ZPLUGINDIR:-${ZDOTDIR:-$HOME/.config/zsh}/plugins}
+  for repo in $@; do
+    # :t gets the tail of the pathname
+    plugdir=$ZPLUGINDIR/${repo:t}
+    initfile=$plugdir/${repo:t}.plugin.zsh
+    if [[ ! -d $plugdir ]]; then
+      echo "Cloning $repo..."
+      git clone -q --depth 1 --recursive --shallow-submodules https://github.com/$repo $plugdir
+    fi
+    if [[ ! -e $initfile ]]; then
+      local -a initfiles=($plugdir/*.plugin.{z,}sh(N) $plugdir/*.{z,}sh{-theme,}(N))
+      (( $#initfiles )) || { echo >&2 "No init file found '$repo'." && continue }
+      ln -sf "${initfiles[1]}" "$initfile"
+    fi
+    fpath+=$plugdir
+    (( $+functions[zsh-defer] )) && zsh-defer . $initfile || . $initfile
+  done
+}
+
+function plugin-update {
+  ZPLUGINDIR=${ZPLUGINDIR:-$HOME/.config/zsh/plugins}
+  for d in $ZPLUGINDIR/*/.git(/); do
+    echo "Updating ${d:h:t}..."
+    # ${d:h} :h gets the head of the path name, so everything except for the filename 
+    command git -C "${d:h}" pull --ff --recurse-submodules --depth 1 --rebase --autostash
+  done
+}
+
+function plugin-ls {
+  for d in $ZPLUGINDIR/*/.git; do
+    git -C "${d:h}" remote get-url origin
+  done
+}
+
+function plugin-rm () {
+  rm -rfi $ZPLUGINDIR/"$1"
+}
+
+# --- git -------------------------- 
+function acp() {
+  git add .
+  git commit -m "$1"
+  git push
+}
+
+mkfile() { mkdir -p "$(dirname "$1")" && touch "$1" ;  }
+
+lnbin () {
+  # $1 path to .sh executable 
+  filename=${1%.*}
+  ln -s $1 "$HOME/.local/bin/${filename:t}"
+  echo "ln -s $1 $HOME/.local/bin/${filename:t}"
+  chmod +x $HOME/.local/bin/${filename:t}
+  echo "chmod +x $HOME/.local/bin/${filename:t}"
+}
+
+lnall () {
+  # $1 parent folder 
+  for file in $1/*.sh; do
+      lnbin $file
+  done;
+}
+
+lnallfromrepo () {
+  # $1 repo name 
+  git -C $HOME/Documents/repos clone git@github.com:$1.git
+  reponame=$(cut -d "/" -f2 <<< "$1")
+  lnall "$HOME/Documents/repos/$reponame"
+}
+
+##############################################
+# FZF
+##############################################
+
+#Search entire file system (ALT-`)
+#ALT-` key will split the current window and start fzf for the entire list of files. The selected files will be pasted on to the original window.
+# fzf-locate
+#bind-key -n 'M-`' run "tmux split-window -p 40 'tmux send-keys -t #{pane_id} \"$(locate / | fzf -m | paste -sd\\  -)\"'"
+
+# fe [FUZZY PATTERN] - Open the selected file with the default editor
+#   - Bypass fuzzy finder if there's only one match (--select-1)
+#   - Exit if there's no match (--exit-0)
+fe() {
+  IFS=$'\n' files=($(fzf-tmux --query="$1" --multi --select-1 --exit-0))
+  [[ -n "$files" ]] && ${EDITOR:-nvim} "${files[@]}"
+}
+
+# Modified version where you can press
+#   - CTRL-O to open with `open` command,
+#   - CTRL-E or Enter key to open with the $EDITOR
+fo() {
+  IFS=$'\n' out=("$(fzf-tmux --query="$1" --exit-0 --expect=ctrl-o,ctrl-e)")
+  key=$(head -1 <<< "$out")
+  file=$(head -2 <<< "$out" | tail -1)
+  if [ -n "$file" ]; then
+    [ "$key" = ctrl-o ] && open "$file" || ${EDITOR:-nvim} "$file"
+  fi
+}
+
+# search file contents 
+#grep --line-buffered --color=never -r "" * | fzf
+
+# with ag - respects .agignore and .gitignore
+#ag --nobreak --nonumbers --noheading . | fzf
+
+# using ripgrep combined with preview
+# find-in-file - usage: fif <searchTerm>
+fif() {
+  if [ ! "$#" -gt 0 ]; then echo "Need a string to search for!"; return 1; fi
+  rg --files-with-matches --no-messages "$1" | fzf --preview "highlight -O ansi -l {} 2> /dev/null | rg --colors 'match:bg:yellow' --ignore-case --pretty --context 10 '$1' || rg --ignore-case --pretty --context 10 '$1' {}"
+}
+
+# fh - repeat history
+fh() {
+  print -z $( ([ -n "$ZSH_NAME" ] && fc -l 1 || history) | fzf +s --tac | sed -E 's/ *[0-9]*\*? *//' | sed -E 's/\\/\\\\/g')
+}
+
+# FZF with tmux ###################################
+# tm - create new tmux session, or switch to existing one. Works from within tmux too. (@bag-man)
+# `tm` will allow you to select your tmux session via fzf.
+# `tm irc` will attach to the irc session (if it exists), else it will create it.
+
+tm() {
+  [[ -n "$TMUX" ]] && change="switch-client" || change="attach-session"
+  if [ $1 ]; then
+    tmux $change -t "$1" 2>/dev/null || (tmux new-session -d -s $1 && tmux $change -t "$1"); return
+  fi
+  session=$(tmux list-sessions -F "#{session_name}" 2>/dev/null | fzf --exit-0) &&  tmux $change -t "$session" || echo "No sessions found."
+}
+
+# fs [FUZZY PATTERN] - Select selected tmux session
+#   - Bypass fuzzy finder if there's only one match (--select-1)
+#   - Exit if there's no match (--exit-0)
+fs() {
+  local session
+  session=$(tmux list-sessions -F "#{session_name}" | \
+    fzf --query="$1" --select-1 --exit-0) &&
+  tmux switch-client -t "$session"
+}
+
+# FZF + ASDF ########################################
+# Install one or more versions of specified language
+# e.g. `vmi rust` # => fzf multimode, tab to mark, enter to install
+# if no plugin is supplied (e.g. `vmi<CR>`), fzf will list them for you
+# Mnemonic [V]ersion [M]anager [I]nstall
+vmi() {
+  local lang=${1}
+
+  if [[ ! $lang ]]; then
+    lang=$(asdf plugin-list | fzf)
+  fi
+
+  if [[ $lang ]]; then
+    local versions=$(asdf list-all $lang | fzf --tac --no-sort --multi)
+    if [[ $versions ]]; then
+      for version in $(echo $versions);
+      do; asdf install $lang $version; done;
+    fi
+  fi
+}
+
+# Remove one or more versions of specified language
+# e.g. `vmi rust` # => fzf multimode, tab to mark, enter to remove
+# if no plugin is supplied (e.g. `vmi<CR>`), fzf will list them for you
+# Mnemonic [V]ersion [M]anager [C]lean
+vmc() {
+  local lang=${1}
+
+  if [[ ! $lang ]]; then
+    lang=$(asdf plugin-list | fzf)
+  fi
+
+  if [[ $lang ]]; then
+    local versions=$(asdf list $lang | fzf -m)
+    if [[ $versions ]]; then
+      for version in $(echo $versions);
+      do; asdf uninstall $lang $version; done;
+    fi
+  fi
+}
+
+## z #################################
+# fasd & fzf change directory - jump using `fasd` if given argument, filter output of `fasd` using `fzf` else
+#z() {
+    #[ $# -gt 0 ] && fasd_cd -d "$*" && return
+    #local dir
+    #dir="$(fasd -Rdl "$1" | fzf -1 -0 --no-sort +m)" && cd "${dir}" || return 1
+#}
+
+## chrome ==========================
+
+# c - browse chrome history
+c() {
+  local cols sep google_history open
+  cols=$(( COLUMNS / 3 ))
+  sep='{::}'
+
+  if [ "$(uname)" = "Darwin" ]; then
+    google_history="$HOME/Library/Application Support/Google/Chrome/Default/History"
+    open=open
+  else
+    google_history="$HOME/.config/google-chrome/Default/History"
+    open=xdg-open
+  fi
+  cp -f "$google_history" /tmp/h
+  sqlite3 -separator $sep /tmp/h \
+    "select substr(title, 1, $cols), url
+     from urls order by last_visit_time desc" |
+  awk -F $sep '{printf "%-'$cols's  \x1b[36m%s\x1b[m\n", $1, $2}' |
+  fzf --ansi --multi | sed 's#.*\(https*://\)#\1#' | xargs $open > /dev/null 2> /dev/null
+}
+
+
+# MPD ###################################################
+fmpc() {
+  local song_position
+  song_position=$(mpc -f "%position%) %artist% - %title%" playlist | \
+    fzf-tmux --query="$1" --reverse --select-1 --exit-0 | \
+    sed -n 's/^\([0-9]\+\)).*/\1/p') || return 1
+  [ -n "$song_position" ] && mpc -q play $song_position
+}
+
+# man pages ###########################################
+fman() {
+    man -k . | fzf -q "$1" --prompt='man> '  --preview $'echo {} | tr -d \'()\' | awk \'{printf "%s ", $2} {print $1}\' | xargs -r man | col -bx | bat -l man -p --color always' | tr -d '()' | awk '{printf "%s ", $2} {print $1}' | xargs -r man
+}
+# Get the colors in the opened man page itself
+export MANPAGER="sh -c 'col -bx | bat -l man -p --paging always'"
+
+# Pacman YAY ###############################################
+# Install packages using yay (change to pacman/AUR helper of your choice)
+function in() {
+    yay -Slq | fzf -q "$1" -m --preview 'yay -Si {1}'| xargs -ro yay -S
+}
+# Remove installed packages (change to pacman/AUR helper of your choice)
+function re() {
+    yay -Qq | fzf -q "$1" -m --preview 'yay -Qi {1}' | xargs -ro yay -Rns
+}
+
+# Helper function to integrate yay and fzf
+yzf() {
+  pos=$1
+  shift
+  sed "s/ /\t/g" |
+    fzf --nth=$pos --multi --history="${FZF_HISTDIR:-$XDG_STATE_HOME/fzf}/history-yzf$pos" \
+      --preview-window=60%,border-left \
+      --bind="double-click:execute(xdg-open 'https://archlinux.org/packages/{$pos}'),alt-enter:execute(xdg-open 'https://aur.archlinux.org/packages?K={$pos}&SB=p&SO=d&PP=100')" \
+       "$@" | cut -f$pos | xargs
+}
+
+# Dev note: print -s adds a shell history entry
+
+# List installable packages into fzf and install selection
+yas() {
+  cache_dir="/tmp/yas-$USER"
+  test "$1" = "-y" && rm -rf "$cache_dir" && shift
+  mkdir -p "$cache_dir"
+  preview_cache="$cache_dir/preview_{2}"
+  list_cache="$cache_dir/list"
+  { test "$(cat "$list_cache$@" | wc -l)" -lt 50000 && rm "$list_cache$@"; } 2>/dev/null
+  pkg=$( (cat "$list_cache$@" 2>/dev/null || { pacman --color=always -Sl "$@"; yay --color=always -Sl aur "$@" } | sed 's/ [^ ]*unknown-version[^ ]*//' | tee "$list_cache$@") |
+    yzf 2 --tiebreak=index --preview="cat $preview_cache 2>/dev/null | grep -v 'Querying' | grep . || yay --color always -Si {2} | tee $preview_cache")
+  if test -n "$pkg"
+    then echo "Installing $pkg..."
+      cmd="yay -S $pkg"
+      print -s "$cmd"
+      eval "$cmd"
+      rehash
+  fi
+}
+# List installed packages into fzf and remove selection
+# Tip: use -e to list only explicitly installed packages
+yar() {
+  pkg=$(yay --color=always -Q "$@" | yzf 1 --tiebreak=length --preview="yay --color always -Qli {1}")
+  if test -n "$pkg"
+    then echo "Removing $pkg..."
+      cmd="yay -R --cascade --recursive $pkg"
+      print -s "$cmd"
+      eval "$cmd"
+  fi
+}
+
+slugify () {
+    echo "$1" | iconv -c -t ascii//TRANSLIT | sed -E 's/[~^]+//g' | sed -E 's/[^a-zA-Z0-9]+/-/g' | sed -E 's/^-+|-+$//g' | tr A-Z a-z
+}
+
+m3u82mp4(){
+   ffmpeg -i $1 -c copy ~/Downloads/$(slugify $1).mp4 
+}
+
+m3u82mp4wo(){
+   ffmpeg -i $1 -c copy $2
+}
+
+ts2mp4(){
+    filename=$(slugify $1)
+    ffmpeg -i $1 -c:v libx264 ~/Downloads/"$slugify".mp4
+}
+
+# === PIP ZSH completion =====
+# pip zsh completion start
+function _pip_completion {
+  local words cword
+  read -Ac words
+  read -cn cword
+  reply=( $( COMP_WORDS="$words[*]" \
+             COMP_CWORD=$(( cword-1 )) \
+             PIP_AUTO_COMPLETE=1 $words[1] 2>/dev/null ))
+}
+compctl -K _pip_completion pip
+# pip zsh completion end

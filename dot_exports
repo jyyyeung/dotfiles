@@ -1,0 +1,73 @@
+# === Export Paths =======================================
+export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
+
+# --- Term ---------------------------------------------------------- 
+# export TERM="xterm-kitty"
+
+# --- Default Editor ------------------------------------------------
+export EDITOR="nvim"
+
+# -- Rust Cargo ------------------------------------------------------
+export PATH="$HOME/.cargo/bin:$PATH"
+
+# -- .Net Tools ------------------------------------------------------
+export PATH="$HOME/.dotnet/tools:$PATH"
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+
+export PATH=$PATH:$HOME/.dotnet/tools
+export DOTNET_ROOT=/opt/dotnet
+export PATH=$PATH:$DOTNET_ROOT
+
+# --- ZPLUG ----------------------------------------------------------
+# Define the environment variable ZPLUG_HOME 
+# export ZPLUG_HOME="$HOME/.zplug"
+# source $ZPLUG_HOME/init.zsh
+
+# --- OMZ -----------------------------------------------------------
+# Path to your oh-my-zsh installation.
+export ZSH="$HOME/.oh-my-zsh"
+
+# --- kunst --------------------------------------------------
+# The size of the album art to be displayed
+export KUNST_SIZE="250x250"
+
+# The position where the album art should be displayed
+export KUNST_POSITION="+0+0"
+
+# Where your music is located
+export KUNST_MUSIC_DIR="~/OneDrive/9x-Misc/95-music"
+
+# --- dotbare -----------------------------------------------------
+export DOTBARE_DIR="$HOME/.dotfiles/.git"
+export DOTBARE_TREE="$HOME/.dotfiles"
+
+# --- bat config -----------------------------------------------------
+export BAT_THEME="Dracula"
+# --- fzf config -----------------------------------------------------
+export FZF_DEFAULT_COMMAND="rg --files --no-ignore-vcs --hidden --follow -g '!.git/' -g '!.zsh_sessions/'"
+export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --margin=1 --padding=1 --color=dark --inline-info --expect=/'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+
+export CHEAT_USE_FZF=true
+
+# === Mac only ========================================================
+
+if [[ uname == 'Darwin' ]]; then
+  # python asdf
+  export LDFLAGS="-L/opt/homebrew/opt/zlib/lib -L$(brew --prefix bzip2)/lib -L/opt/homebrew/opt/openssl@3/lib"
+  export CPPFLAGS="-I/opt/homebrew/opt/zlib/include -I$(brew --prefix bzip2)/include -I/opt/homebrew/opt/openssl@3/include"
+
+  export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl@3/lib/pkgconfig"
+  export PKG_CONFIG_PATH="/opt/homebrew/opt/zlib/lib/pkgconfig"
+
+  if type brew &>/dev/null
+  then
+    FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
+
+    autoload -Uz compinit
+    compinit
+  fi
+
+fi
+
+

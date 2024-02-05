@@ -1,0 +1,23 @@
+# Add Homebrew to PATH
+#[ -s "/usr/local/bin/brew" ] && eval "$(/usr/local/bin/brew shellenv)"
+[ -d "/opt/homebrew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+
+#test -d ~/.linuxbrew && eval "$(~/.linuxbrew/bin/brew shellenv)"
+test -d /home/linuxbrew && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+# set locale 
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+# loads exports 
+source $HOME/.exports
+
+# solve "too many open files"
+ulimit -n 10240
+
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/yyymx/Dev/Environments/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/yyymx/Dev/Environments/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/yyymx/Dev/Environments/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/yyymx/Dev/Environments/google-cloud-sdk/completion.zsh.inc'; fi

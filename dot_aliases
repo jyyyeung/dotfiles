@@ -1,0 +1,75 @@
+#alias brewm1 ="arch -x86_64 brew"
+#alias brewintel="brew"
+
+#alias armbrew="/opt/homebrew/bin/brew"
+#alias brew ="/opt/homebrew/bin/brew"
+
+#alias brew='arch -x86_64 brew'
+
+alias brow='arch --x86_64 /usr/local/Homebrew/bin/brew'
+alias ib='PATH=/usr/local/bin'
+
+# === aliases ========================================================
+alias zshconfig="nvim ~/.zshrc"
+alias sourcezsh="source ~/.zshrc"
+alias nvimconfig="nvim ~/.config/nvim/init.vim"
+alias sourcenvim="source ~/.config/nvim/init.vim"
+
+alias lxmusicconfig="xattr -cr /Applications/lx-music-desktop.app"
+
+alias nvmrec="node -v > .nvmrc"
+
+alias wa="tungsten"
+alias wolfram="tungsten"
+
+# alias ls='colorls'
+alias ll="exa -l -g --icons -a"
+alias ls="exa --icons -a"
+alias lt="exa --tree --icons -a -I '.git|__pycache__|.mypy_cache|.ipynb_checkpoints'"
+
+alias h='history'
+alias grep='grep --color'
+
+#read documents
+alias -s pdf=acroread
+
+#list whats inside packed file
+alias -s zip="unzip -l"
+alias -s rar="unrar l"
+alias -s tar="tar tf"
+alias -s tar.gz="echo "
+
+
+[ -x "$(command -v batcat)" ] && alias bat="batcat"
+
+alias woman="eg --squeeze" # eg cheatcheat man page completion
+
+# Run Task warrier gui 
+#github.com/DCsunset/taskwarrior-webui
+alias taskwarrier-webui="docker run -d -p 8080:80 --name taskwarrior-webui -v $HOME/.taskrc:/.taskrc -v $HOME/.task:/.task dcsunset/taskwarrior-webui"
+
+alias youtube-dl-mp3="youtube-dl --extract-audio --audio-format mp3 "
+
+# youtube-dl alias
+mp3 () {
+    youtube-dl --ignore-errors -f bestaudio --extract-audio --audio-format mp3 --audio-quality 0 -o '%(title)s.%(ext)s' "$1"
+}
+
+mp3p () {
+    youtube-dl --ignore-errors --sleep-interval 30 -i -f bestaudio --extract-audio --audio-format mp3 --audio-quality 0 -o '%(playlist)s/%(playlist_index)s - %(title)s.%(ext)s' "$1"
+}
+
+dlv () {
+    youtube-dl --ignore-errors -o '%(title)s.%(ext)s' "$1"
+}
+
+dlp () {
+    youtube-dl --yes-playlist --ignore-errors --sleep-interval 30 -o '%(playlist)s/%(title)s.%(ext)s' "$1"
+}
+
+# docker 
+alias dcup='docker-compose -f ~/docker-compose.yml up -d' #brings up all containers if one is not defined after dcup
+alias dcdown='docker-compose -f ~/docker-compose.yml stop' #brings down all containers if one is not defined after dcdown
+alias dcpull='docker-compose -f ~/docker-compose.yml pull' #pulls all new images unless one is specified
+alias dclogs='docker-compose -f ~/docker-compose.yml logs -tf --tail="50" '
+alias dtail='docker logs -tf --tail="50" "$@"'

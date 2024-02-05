@@ -1,0 +1,585 @@
+#  Use Powerline                                          
+USE_POWERLINE="true"
+
+#  P10k
+#  
+
+# where do you want to store your plugins?
+ZPLUGINDIR=${ZPLUGINDIR:-${ZDOTDIR:-$HOME/.config/zsh}/plugins}
+
+if [[ ! -d $ZPLUGINDIR/powerlevel10k ]]; then
+  git clone --quiet --depth 1 https://github.com/romkatv/powerlevel10k.git $ZPLUGINDIR/powerlevel10k
+fi
+source $ZPLUGINDIR/powerlevel10k/powerlevel10k.zsh-theme
+
+if (( $+commands[pacman] )); then
+    # install yay if not installed in pacman systems 
+    if ! (( $+commands[yay] )); then
+        pacman -S --needed git base-devel && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
+        yay -Y --gendb
+        yay -Y --devel --combinedupgrade --batchinstall --save
+    fi
+fi
+
+#  ┌
+#  │ Enable Powerlevel10k instant prompt. Should stay         
+#  │  close to the top of ~/.zshrc.                           
+#  │ Initialization code that may require console input       
+#  │  (password prompts, [y/n]                                
+#  │ confirmations, etc.) must go above this block;           
+#  │  everything else may go below.                           
+#  └                                                           
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+#  ┌
+#  │ To customize prompt, run `p10k configure` or edit        
+#  │  ~/.p10k.zsh.                                            
+#  └                                                           
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+#  ┌
+#  │ completion for kitty                                     
+#  └                                                           
+#kitty + complete setup zsh | source /dev/stdin
+ 
+#  Loads zplug                                              
+ZPLUGINDIR=${ZPLUGINDIR:-${ZDOTDIR:-$HOME/.config/zsh}/plugins} # the dir where all zsh plugins are stored
+
+# get zsh_unplugged and store it with your other plugins
+if [[ ! -d $ZPLUGINDIR/zsh_unplugged ]]; then
+  git clone --quiet https://github.com/mattmc3/zsh_unplugged $ZPLUGINDIR/zsh_unplugged
+fi
+source $ZPLUGINDIR/zsh_unplugged/zsh_unplugged.zsh
+
+#  │ installs fzf                                              
+# get fzf and store it with your other plugins
+if [[ ! -d $ZPLUGINDIR/fzf ]]; then
+  git clone --quiet --depth 1 https://github.com/junegunn/fzf $ZPLUGINDIR/fzf
+  $ZPLUGINDIR/fzf/install
+fi
+
+# install asdf
+ASDF_DIR=$HOME/.asdf
+if [[ ! -d $HOME/.asdf ]]; then
+  git clone https://github.com/asdf-vm/asdf.git ~/.asdf 
+fi
+
+source <(kubectl completion zsh)
+
+# append completions to fpath
+fpath=(${ASDF_DIR}/completions $fpath)
+
+test -d /home/linuxbrew && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+if ! (( $+commands[brew] )); then
+    # install homebrew if not found 
+    if [[ "$(uname -m)" != "aarch64" ]] && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    if (( $+commands[yay] )) && yay -S base-devel
+fi
+(( $+commands[brew] )) &&  path=('/opt/homebrew/bin' '/opt/homebrew/sbin' $path)
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │                    enable completions                    │
+#  ╰──────────────────────────────────────────────────────────╯
+# initialise completions with ZSH's compinit
+autoload -Uz compinit && compinit
+
+autoload -U bashcompinit
+bashcompinit
+
+ 
+# NOTE: put here because asliases file hopes to overwrite some aliases defined by omz
+# Oh-My-Zsh plugins rely on stuff in its lib directory
+ZSH=$ZPLUGINDIR/ohmyzsh
+
+if [ -d $ZSH/lib ]; then
+	for _f in $ZSH/lib/*.zsh; do
+	  source $_f
+	done
+	unset _f
+fi
+
+#
+#  ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │                    Pre configuration                     │
+#  ╰──────────────────────────────────────────────────────────╯
+#  
+#  Loads Aliases                                            
+source $HOME/.aliases
+#  loads functions                                          
+source $HOME/.functions 
+#  loads exports                                            
+source $HOME/.exports
+ 
+#  ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │                     Options section                      │
+#  ╰──────────────────────────────────────────────────────────╯
+setopt correct                                                  # Auto correct mistakes
+setopt extendedglob                                             # Extended globbing. Allows using regular expressions with *
+setopt nocaseglob                                               # Case insensitive globbing
+setopt rcexpandparam                                            # Array expension with parameters
+setopt nocheckjobs                                              # Don't warn about running processes when exiting
+setopt numericglobsort                                          # Sort filenames numerically when it makes sense
+setopt nobeep                                                   # No beep
+setopt appendhistory                                            # Immediately append history instead of overwriting
+setopt histignorealldups                                        # If a new command is a duplicate, remove the older one
+# setopt autocd                                                   # if only directory path is entered, cd there.
+setopt inc_append_history                                       # save commands are added to the history immediately, otherwise only when shell exits.
+setopt histignorespace                                          # Don't save commands that start with space
+
+#  ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+#  ┌
+#  │ Compilation flags                                        
+#  └                                                           
+# export ARCHFLAGS="-arch x86_64"
+
+#  ╔══════════════════════════════════════════════════════════╗
+#  ║                         Packages                         ║
+#  ╚══════════════════════════════════════════════════════════╝
+plugins=(
+    romkatv/powerlevel10k # theme 
+
+    # git
+   wfxr/forgit # Utility tool for using git interactively. Powered by junegunn/fzf.
+   Bhupesh-V/ugit # undo git 
+
+#
+#  ╭──────────────────────────────────────────────────────────╮
+#  │                           Tmux                           │
+#  ╰──────────────────────────────────────────────────────────╯
+#   kjhaber/tm.zsh
+  # "mbenford/zsh-tmux-auto-title"
+
+  # TODO: Move from stow to dotbare???
+#   kazhala/dotbare
+
+  #"wting/autojump"
+  djui/alias-tips # suggest alias when you typed the entire command
+  #"Tarrasch/zsh-bd" # Jumps to the previous directory 
+
+  zsh-users/zsh-completions # additional completion definitions for zsh 
+
+  Aloxaf/fzf-tab # <tab> 
+#   leophys/zsh-plugin-fzf-finder
+#   joshskidmore/zsh-fzf-history-search
+
+  # loads everying required for asdf 
+  kiurchv/asdf.plugin.zsh
+
+  rupa/z
+  changyuheng/fz
+  b4b4r07/enhancd
+
+  zdharma-continuum/fast-syntax-highlighting # syntax highlighting in zsh 
+
+  chrissicool/zsh-256color # This ZSH plugin enhances the terminal environment with 256 colors.
+
+  zsh-users/zsh-autosuggestions # It suggests commands as you type based on history and completions. As you type commands, you will see a completion offered after the cursor in a muted gray color
+  ael-code/zsh-colored-man-pages # It simply provides a man wrapper function that shows colored manpages.
+#   zsh-users/zsh-syntax-highlighting
+ # "marlonrichert/zsh-autocomplete"
+
+  foxleigh81/unwrap-zsh-plugin # unwrap: remove folder and put contents in parent
+)
+
+
+repos=(
+  # not-sourcable plugins
+#   romkatv/zsh-bench # zsh benchmark testing 
+
+  # projects with nested plugins
+  belak/zsh-utils
+  ohmyzsh/ohmyzsh
+)
+
+# now load your plugins
+plugin-clone $repos
+
+plugin-load $plugins
+
+# zsh-bench doesn't have a plugin file
+# it just needs added to your $PATH
+export PATH="$ZPLUGINDIR/zsh-bench:$PATH"
+
+
+repo_plugins=(
+  # not-sourcable plugins
+  zsh-utils/history # Load and initilize the built-in zsh history system
+  #zsh-utils/utility # Common shell utilities, aimed at making cross platform work less painful
+
+  ohmyzsh/plugins/command-not-found 
+  ohmyzsh/plugins/yarn # yarn alias
+  ohmyzsh/plugins/sudo # double <esc> for sudo 
+  ohmyzsh/plugins/git # git aliases
+  ohmyzsh/plugins/asdf # asdf aliases
+  ohmyzsh/plugins/wp-cli
+  ohmyzsh/plugins/macos
+  ohmyzsh/plugins/pip
+  ohmyzsh/plugins/python
+)
+
+plugin-source $repo_plugins
+
+# command-not-found 
+
+#  ┌
+#  │ Offer to install missing package if command is not found 
+#  └                                                           
+if [[ -r /usr/share/zsh/functions/command-not-found.zsh ]]; then
+    source /usr/share/zsh/functions/command-not-found.zsh
+    export PKGFILE_PROMPT_INSTALL_MISSING=1
+fi
+
+# for arch linux
+if [[ -r /usr/share/doc/pkgfile/command-not-found.zsh ]]; then
+    source /usr/share/doc/pkgfile/command-not-found.zsh
+    export PKGFILE_PROMPT_INSTALL_MISSING=1
+fi
+
+# command not found for brew  
+if (( $+commands[brew] )); then 
+    HB_CNF_HANDLER="$(brew --repository)/Library/Taps/homebrew/homebrew-command-not-found/handler.sh"
+     if [ -f "$HB_CNF_HANDLER" ]; then
+        source "$HB_CNF_HANDLER"
+    else
+        brew tap homebrew/command-not-found
+    fi   
+fi
+
+
+
+#  ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+less=eless
+cat=bat
+
+#  ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │                           fzf                            │
+#  ╰──────────────────────────────────────────────────────────╯
+local extract="
+    # trim input
+    local in=\${\${\"\$(<{f})\"%\$'\0'*}#*\$'\0'}
+    # get ctxt for current completion
+    local -A ctxt=(\"\${(@ps:\2:)CTXT}\")
+    # real path
+    local realpath=\${ctxt[IPREFIX]}\${ctxt[hpre]}\$in
+    realpath=\${(Qe)~realpath}
+"
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │                          Zstyle                          │
+#  ╰──────────────────────────────────────────────────────────╯
+
+
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'       # Case insensitive tab completion
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"         # Colored completion (different colors for dirs/files/etc)
+zstyle ':completion:*' rehash true                              # automatically find new executables in path 
+# Speed up completions
+zstyle ':completion:*' accept-exact '*(N)'
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path ~/.zsh/cache
+HISTFILE=~/.zhistory
+HISTSIZE=10000
+SAVEHIST=10000
+
+if (( $+commands[nvim] )); then 
+    export VISUAL=$(which nvim)
+    export EDITOR="$VISUAL"
+    export SYSTEMD_EDITOR="$VISUAL"
+    export SUDO_EDITOR="$VISUAL"
+fi 
+WORDCHARS=${WORDCHARS//\/[&.;]}                                 # Don't consider certain characters part of the word
+
+##  
+##  │ enable zsh tab-completion                                
+##  └                                                           
+zstyle ':completion:*' menu select
+
+zstyle ':completion::complete:*' gain-privileges 1
+zstyle ':completion:*' list-colors ''
+#zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*:messages' format ' %F{purple} -- %d --%f'
+#zstyle ':completion:*:warnings' format ' %F{red}-- no matches found --%f'
+ 
+##  ┌
+##  │ formatting and messages                                  
+##  └                                                           
+## http://www.masterzen.fr/2009/04/19/in-love-with-zsh-part-one/
+zstyle ':completion:*' verbose yes
+zstyle ':completion:*:descriptions' format "$fg[yellow]%B--- %d%b"
+zstyle ':completion:*:warnings' format "$fg[red]No matches for:$reset_color %d"
+zstyle ':completion:*:corrections' format '%B%d (errors: %e)%b'
+##zstyle ':completion:*' group-name ''
+          
+#zstyle ':completion:*:git-checkout:*' sort false # disable sort when completing `git checkout`             
+zstyle ':completion:*:descriptions' format '[%d]' # set descriptions format to enable group support
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS} # set list-colors to enable filename colorizing
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'exa -1 --color=always $realpath' # preview directory's content with exa when completing cd                                
+zstyle ':fzf-tab:*' switch-group '[' ']' # switch group using `[` and `]`     
+
+# give a preview of commandline arguments when completing `kill`
+zstyle ':completion:*:*:*:*:processes' command "ps -u $USER -o pid,user,comm -w -w"
+zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-preview \
+  '[[ $group == "[process ID]" ]] && ps --pid=$word -o cmd --no-headers -w -w'
+
+if  [[ $OSTYPE == 'darwin'* ]]; then
+    zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-preview \
+        '[[ $group == "[process ID]" ]] && ps -p$word -o command'
+fi
+zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-flags --preview-window=down:3:wrap
+
+
+
+#zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl status $word' # Show systemd unit status   
+               
+##zstyle ':fzf-tab:complete:*:*' fzf-preview '$less ${(Q)realpath}' # Show file contents     
+##export LESSOPEN='|~/.lessfilter %s'
+                
+#zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' fzf-preview 'echo ${(P)word}' # tab environment variables preview   
+
+##  ┌
+##  │ Git fzf tab                                              
+##  └                                                           
+#zstyle ':fzf-tab:complete:git-(add|diff|restore):*' fzf-preview 'git diff $word | delta'
+#zstyle ':fzf-tab:complete:git-log:*' fzf-preview 'git log --color=always $word'
+#zstyle ':fzf-tab:complete:git-help:*' fzf-preview 'git help $word | bat -plman --color=always'
+#zstyle ':fzf-tab:complete:git-show:*' fzf-preview \
+	#'case "$group" in
+	#"commit tag") git show --color=always $word ;;
+	#*) git show --color=always $word | delta ;;
+	#esac'
+#zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview \
+	#'case "$group" in
+	#"modified file") git diff $word | delta ;;
+	#"recent commit object name") git show --color=always $word | delta ;;
+	#*) git log --color=always $word ;;
+	#esac'
+                  
+#zstyle ':fzf-tab:user-expand:*' fzf-preview '$less ${(Q)word}' # pinyin tab support   
+
+##  ┌
+##  │ if you don't want to use any alias or you want to        
+##  │  use the full path, you will find the fzf-tab            
+##  │  completion tag for man cannot work for \man and         
+##  │  /usr/bin/man.                                           
+##  └                                                           
+zstyle ':fzf-tab:complete:(\\|)run-help:*' fzf-preview 'run-help $word'
+zstyle ':fzf-tab:complete:(\\|*/|)man:*' fzf-preview 'man $word'
+
+            
+zstyle ':fzf-tab:*' continuous-trigger ' ' # fzf space continuous trigger    
+zstyle ':fzf-tab:*' accept-line enter                                                
+#zstyle ':completion:complete:*:options' sort false
+
+zstyle ':fzf-tab:*' prefix ' '
+
+### PYTHON ########
+if ! (( $+commands[python] )); then
+    #python is not installed
+    if [ -d $ASDF_DIR ]; then 
+        asdf plugin add python
+        asdf install python latest
+        asdf global python latest
+    fi
+fi
+
+
+if ! (( $+commands[pipx] )); then 
+    python3 -m pip install --user pipx  
+    python3 -m pipx ensurepath
+fi
+
+if ! (( $+commands[register-python-argcomplete] )); then 
+    pip3 install --user argcomplete
+    activate-global-python-argcomplete
+fi
+
+eval "$(register-python-argcomplete pipx)"
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │                           Node                           │
+#  ╰──────────────────────────────────────────────────────────╯
+
+if ! (( $+commands[node] )); then
+    #nodejs is not installed
+    if [ -d $ASDF_DIR ]; then 
+        asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+        asdf install nodejs latest
+        asdf global nodejs latest
+        npm install --global yarn
+        asdf reshim 
+
+        yarn global add neovim
+    fi
+fi
+
+
+if ! (( $+commands[diff-so-fancy] )); then 
+    if (( $+commands[brew] )); then 
+        brew install diff-so-fancy
+    fi
+fi
+
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │                           Ruby                           │
+#  ╰──────────────────────────────────────────────────────────╯
+#  ┌
+#  │ #PATH=$PATH:$(ruby -e 'puts Gem.bindir')                 
+#  └                                                           
+
+if ! (( $+commands[ruby] )); then
+    #ruby is not installed
+    #if [ -d $ASDF_DIR ]; then 
+	#if (( $+commands[apt] )); then
+		## install requirements
+		#sudo apt install autoconf patch build-essential rustc libssl-dev libyaml-dev libreadline6-dev zlib1g-dev libgmp-dev libncurses5-dev libffi-dev libgdbm6 libgdbm-dev libdb-dev uuid-dev
+	#elif (( $+command[pacman] )); then
+		#pacman -S --needed base-devel rust libffi libyaml openssl zlib
+	#elif (( $+command[apk] )); then
+		#apk add build-base gcc6 patch bzip2 libffi-dev openssl-dev ncurses-dev gdbm-dev zlib-dev readline-dev yaml-dev
+	#fi
+        #asdf plugin add ruby https://github.com/asdf-vm/asdf-ruby.git
+        #asdf install ruby latest
+        
+        #asdf global ruby latest
+        #if (( $+command[gem] )); then
+        #gem install neovim 
+        #fi
+    #fi
+fi
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+[ -f /opt/asdf-vm/asdf.sh ] && source /opt/asdf-vm/asdf.sh
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │                         dotbare                          │
+#  ╰──────────────────────────────────────────────────────────╯
+#  ┌
+#  │ dotbare completion                                       
+#  └                                                           
+# source ${ZPLUGINDIR}/dotbare/dotbare.plugin.zsh
+# _dotbare_completion_cmd
+#_dotbare_completion_git
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │                          cheat                           │
+#  ╰──────────────────────────────────────────────────────────╯
+#source $HOME/.zplug/repos/cheat/cheat/scripts/cheat.zsh
+#. $(dirname "$(which cheat)")
+#fpath=$($ZSH/functions $ZSH/completions $fapth)
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │                            GO                            │
+#  ╰──────────────────────────────────────────────────────────╯
+
+export GOPATH="$HOME/Dev/Projects/Go"
+export PATH=$(go env GOPATH)/bin:$PATH
+
+if ! (( $+commands[go] )); then
+    #GO is not installed
+    if [ -d $ASDF_DIR ]; then 
+        asdf plugin add golang
+        asdf install golang latest
+	    asdf global golang latest
+    fi
+fi
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │                           Exa                            │
+#  ╰──────────────────────────────────────────────────────────╯
+
+if ! (( $+commands[exa] )); then
+    # exa is not installed
+    if (( $+commands[brew] )); then 
+        brew install exa
+    elif [ -d $ASDF_DIR ]; then 
+        asdf plugin add exa https://github.com/nyrst/asdf-exa.git
+        asdf install exa latest
+        asdf global exa latest
+    elif (( $+commands[apt] )); then 
+	sudo apt install exa -y
+    fi
+fi
+
+
+export WORKON_HOME=~/.virtualenvs
+#. $(asdf where python)/bin/virtualenvwrapper.sh
+# . $(which virtualenvwrapper.sh)
+
+
+
+# install zathura 
+#
+if ! (( $+commands[zathura] )); then
+    if  [[ $OSTYPE == 'darwin'* ]]; then
+        brew tap zegervdv/zathura
+        brew install zathura
+        if ! [[ -f $(brew --prefix zathura)/lib/zathura/libpdf-mupdf.dylib ]]; then
+            brew install zathura-pdf-mupdf
+            mkdir -p $(brew --prefix zathura)/lib/zathura
+            ln -s $(brew --prefix zathura-pdf-mupdf)/libpdf-mupdf.dylib $(brew --prefix zathura)/lib/zathura/libpdf-mupdf.dylib
+        fi
+    elif (( $+commands[yay] )); then
+        yay -S zathura zathura-pdf-mupdf xdotool
+    elif (( $+commands[apt] )); then
+	sudo apt install zathura -y
+    fi
+fi 
+
+if [[ -d "~/.config/i3" ]]; then 
+    if ! (( $+commands[i3-resurrect] )); then
+        pip install --user --upgrade i3-resurrect
+        asdf reshim
+    fi 
+fi
+
+
+if [[ $OSTYPE == 'darwin'* ]]; then
+    # >>> conda initialize >>>
+    # !! Contents within this block are managed by 'conda init' !!
+    __conda_setup="$('/opt/homebrew/Caskroom/miniconda/base/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+    if [ $? -eq 0 ]; then
+        eval "$__conda_setup"
+    else
+        if [ -f "/opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh" ]; then
+            . "/opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh"
+        else
+            export PATH="/opt/homebrew/Caskroom/miniconda/base/bin:$PATH"
+        fi
+    fi
+    unset __conda_setup
+    # <<< conda initialize <<<
+fi
+
+fpath+=~/.zfunc
+
+path=($HOME'/.local/bin' $path)
+
+fpath=(~/.zsh.d/ $fpath)
+
+export PATH 
+
+#[[ -s /etc/profile.d/autojump.zsh ]] && source /etc/profile.d/autojump.zsh
+
+if ! (( $+commands[fuck] )); then
+    if (( $+commands[apt] )); then
+        sudo apt install thefuck
+    fi
+    eval $(thefuck --alias)
+fi
+# eval "$(fasd --init auto)"
+# source "${XDG_CONFIG_HOME:-$HOME/.config}/asdf-direnv/zshrc"
+
+
+typeset -U PATH # duplicates of PATH variables
+
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
