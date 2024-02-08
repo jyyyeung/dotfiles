@@ -561,12 +561,6 @@ export PATH
 
 #[[ -s /etc/profile.d/autojump.zsh ]] && source /etc/profile.d/autojump.zsh
 
-; if ! (( $+commands[fuck] )); then
-;     if (( $+commands[apt] )); then
-;         sudo apt install thefuck
-;     fi
-;     eval $(thefuck --alias)
-; fi
 # eval "$(fasd --init auto)"
 # source "${XDG_CONFIG_HOME:-$HOME/.config}/asdf-direnv/zshrc"
 
