@@ -397,7 +397,7 @@ if ! (( $+commands[register-python-argcomplete] )); then
     activate-global-python-argcomplete
 fi
 
-eval "$(register-python-argcomplete pipx)"
+# eval "$(register-python-argcomplete pipx)"
 
 #  ╭──────────────────────────────────────────────────────────╮
 #  │                           Node                           │
