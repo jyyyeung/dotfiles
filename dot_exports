@@ -67,6 +67,8 @@ if [[ uname == 'Darwin' ]]; then
     autoload -Uz compinit
     compinit
   fi
+  # tex
+  FPATH="/Library/Tex/texbin:$FPATH"
 
 fi
 
