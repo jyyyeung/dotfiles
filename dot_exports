@@ -70,6 +70,11 @@ if [[ uname == 'Darwin' ]]; then
   # tex
   FPATH="/Library/Tex/texbin:$FPATH"
 
+  # React Native for Android Dev
+  export ANDROID_HOME=$HOME/Library/Android/sdk
+  export PATH=$PATH:$ANDROID_HOME/emulator
+  export PATH=$PATH:$ANDROID_HOME/platform-tools
+
 fi
 
 # https://github.com/SijanC147/macprefs
