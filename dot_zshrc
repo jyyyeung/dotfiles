@@ -2,7 +2,6 @@
 USE_POWERLINE="true"
 
 #  P10k
-#  
 
 # where do you want to store your plugins?
 ZPLUGINDIR=${ZPLUGINDIR:-${ZDOTDIR:-$HOME/.config/zsh}/plugins}
