@@ -75,6 +75,9 @@ if [[ uname == 'Darwin' ]]; then
   export PATH=$PATH:$ANDROID_HOME/emulator
   export PATH=$PATH:$ANDROID_HOME/platform-tools
 
+  # Flutter Binary installed under ~/development
+  export FLUTTER_BIN=$HOME/development/flutter/bin
+  export PATH=$PATH:FLUTTER_BIN
 fi
 
 # https://github.com/SijanC147/macprefs
