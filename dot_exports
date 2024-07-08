@@ -35,7 +35,7 @@ export KUNST_SIZE="250x250"
 export KUNST_POSITION="+0+0"
 
 # Where your music is located
-export KUNST_MUSIC_DIR="~/OneDrive/9x-Misc/95-music"
+export KUNST_MUSIC_DIR="$HOME/OneDrive/9x-Misc/95-music"
 
 # --- dotbare -----------------------------------------------------
 export DOTBARE_DIR="$HOME/.dotfiles/.git"
@@ -76,7 +76,7 @@ if [[ uname == 'Darwin' ]]; then
   export PATH=$PATH:$ANDROID_HOME/platform-tools
 
   # Flutter Binary installed under ~/development
-  export FLUTTER_BIN=$HOME/development/flutter/bin
+  export FLUTTER_BIN=$HOME/dev/flutter/bin
   export PATH=$PATH:$FLUTTER_BIN
 fi
 
