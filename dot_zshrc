@@ -471,11 +471,18 @@ fi
 #. $(dirname "$(which cheat)")
 #fpath=$($ZSH/functions $ZSH/completions $fapth)
 
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │                            FLUTTER                       │
+#  ╰──────────────────────────────────────────────────────────╯
+
+export PATH="$HOME/dev/flutter/bin:$PATH"
+
 #  ╭──────────────────────────────────────────────────────────╮
 #  │                            GO                            │
 #  ╰──────────────────────────────────────────────────────────╯
 
-export GOPATH="$HOME/Dev/Projects/Go"
+export GOPATH="$HOME/dev/go"
 export PATH=$(go env GOPATH)/bin:$PATH
 
 if ! (( $+commands[go] )); then
