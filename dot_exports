@@ -78,3 +78,11 @@ fi
 
 # https://github.com/SijanC147/macprefs
 export MACPREFS_BACKUP_DIR="$HOME/Library/CloudStorage/OneDrive-lqwq/Apps/macprefs"
+
+# GO
+export ASDF_DIR="$HOME/.asdf"
+export GOPATH="$ASDF_DIR/shims"
+export GOROOT="$(go env GOROOT)"
+export GOCACHE=$HOME/env/go/cache
+export GOPROXY="https://proxy.golang.org,direct"
+export PATH="$GOPATH/bin:$PATH"
