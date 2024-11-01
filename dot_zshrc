@@ -482,8 +482,8 @@ export PATH="$HOME/dev/flutter/bin:$PATH"
 #  │                            GO                            │
 #  ╰──────────────────────────────────────────────────────────╯
 
-export GOPATH="$HOME/dev/go"
-export PATH=$(go env GOPATH)/bin:$PATH
+# export GOPATH="$HOME/dev/go"
+# export PATH=$(go env GOPATH)/bin:$PATH
 
 if ! (( $+commands[go] )); then
     #GO is not installed
@@ -491,6 +491,7 @@ if ! (( $+commands[go] )); then
         asdf plugin add golang
         asdf install golang latest
 	    asdf global golang latest
+	    . ~/.asdf/plugins/golang/set-env.zsh
     fi
 fi
 
