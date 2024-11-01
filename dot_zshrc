@@ -484,6 +484,9 @@ export PATH="$HOME/dev/flutter/bin:$PATH"
 
 # export GOPATH="$HOME/dev/go"
 # export PATH=$(go env GOPATH)/bin:$PATH
+export GOPATH=$(asdf where golang)/packages
+export GOROOT=$(asdf where golang)/go
+export PATH="${PATH}:$(go env GOPATH)/bin"
 
 if ! (( $+commands[go] )); then
     #GO is not installed
