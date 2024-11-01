@@ -81,8 +81,10 @@ export MACPREFS_BACKUP_DIR="$HOME/Library/CloudStorage/OneDrive-lqwq/Apps/macpre
 
 # GO
 export ASDF_DIR="$HOME/.asdf"
-export GOPATH="$ASDF_DIR/shims"
-export GOROOT="$(go env GOROOT)"
-export GOCACHE=$HOME/env/go/cache
+#export GOPATH="$ASDF_DIR/shims"
+#export GOROOT="$(go env GOROOT)"
+#export GOCACHE=$HOME/env/go/cache
+export GOPATH=$(asdf where golang)/packages
+export GOROOT=$(asdf where golang)/go
+export PATH="${PATH}:$(go env GOPATH)/bin"
 export GOPROXY="https://proxy.golang.org,direct"
-export PATH="$GOPATH/bin:$PATH"
