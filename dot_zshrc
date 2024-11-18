@@ -337,7 +337,7 @@ zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-flags --preview-window=do
 ##zstyle ':fzf-tab:complete:*:*' fzf-preview '$less ${(Q)realpath}' # Show file contents     
 ##export LESSOPEN='|~/.lessfilter %s'
                 
-#zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' fzf-preview 'echo ${(P)word}' # tab environment variables preview   
+zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' fzf-preview 'echo ${(P)word}' # tab environment variables preview   
 
 ##  ┌
 ##  │ Git fzf tab                                              
@@ -359,12 +359,12 @@ zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-flags --preview-window=do
                   
 #zstyle ':fzf-tab:user-expand:*' fzf-preview '$less ${(Q)word}' # pinyin tab support   
 
-##  ┌
-##  │ if you don't want to use any alias or you want to        
-##  │  use the full path, you will find the fzf-tab            
-##  │  completion tag for man cannot work for \man and         
-##  │  /usr/bin/man.                                           
-##  └                                                           
+#  ┌
+#  │ if you don't want to use any alias or you want to        
+#  │  use the full path, you will find the fzf-tab            
+#  │  completion tag for man cannot work for \man and         
+#  │  /usr/bin/man.                                           
+#  └                                                           
 zstyle ':fzf-tab:complete:(\\|)run-help:*' fzf-preview 'run-help $word'
 zstyle ':fzf-tab:complete:(\\|*/|)man:*' fzf-preview 'man $word'
 
