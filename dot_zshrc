@@ -145,7 +145,7 @@ plugins=(
     # git
    wfxr/forgit # Utility tool for using git interactively. Powered by junegunn/fzf.
    Bhupesh-V/ugit # undo git 
-   bobthecow/git-flow-completion # git flow
+   #bobthecow/git-flow-completion # git flow
 
 #
 #  ╭──────────────────────────────────────────────────────────╮
@@ -187,6 +187,7 @@ plugins=(
 repos=(
   # not-sourcable plugins
 #   romkatv/zsh-bench # zsh benchmark testing 
+  bobthecow/git-flow-completion
 
   # projects with nested plugins
   belak/zsh-utils
