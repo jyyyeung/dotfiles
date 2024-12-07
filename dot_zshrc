@@ -574,6 +574,7 @@ export PATH
 #[[ -s /etc/profile.d/autojump.zsh ]] && source /etc/profile.d/autojump.zsh
 
 # eval "$(fasd --init auto)"
+fpath=($ASDF_DIR/completions $fpath)
 source "${XDG_CONFIG_HOME:-$HOME/.config}/asdf-direnv/zshrc"
 
 
