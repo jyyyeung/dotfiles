@@ -381,9 +381,13 @@ zstyle ':fzf-tab:*' prefix ' '
 if ! (( $+commands[python] )); then
     #python is not installed
     if [ -d $ASDF_DIR ]; then 
-        asdf plugin add python
-        asdf install python latest
-        asdf global python latest
+	if (( $+commands[apt] )); then
+		# install requirements
+		sudo apt install build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev curl git libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+
+	asdf plugin add python
+        asdf install python
+        # asdf global python latest
     fi
 fi
 

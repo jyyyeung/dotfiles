@@ -4,4 +4,4 @@ direnv system
 golang 1.22.8
 java openjdk-24-loom+4-42
 neovim nightly
-golang 1.22
+golang 1.22.4
