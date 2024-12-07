@@ -86,7 +86,9 @@ autoload -Uz compinit && compinit
 autoload -U bashcompinit && bashcompinit
 
 
-source <(kubectl completion zsh)
+if (( $+commands[kubectl] )); then  
+    source <(kubectl completion zsh)
+fi
 # NOTE: put here because asliases file hopes to overwrite some aliases defined by omz
 # Oh-My-Zsh plugins rely on stuff in its lib directory
 ZSH=$ZPLUGINDIR/ohmyzsh
@@ -240,8 +242,12 @@ fi
 
 # command not found for brew  
 if (( $+commands[brew] )); then 
-    HB_CNF_HANDLER="$(brew --repository)/Library/Taps/homebrew/homebrew-command-not-found/handler.sh"
-     if [ -f "$HB_CNF_HANDLER" ]; then
+    if [[ $(uname) == 'Darwin' ]]; then
+        HB_CNF_HANDLER="$(brew --repository)/Library/Taps/homebrew/homebrew-command-not-found/handler.sh"
+    else
+        HB_CNF_HANDLER="$(brew --repository)/share/zsh/site-functions/_brew"
+    fi
+    if [ -f "$HB_CNF_HANDLER" ]; then
         source "$HB_CNF_HANDLER"
     else
         brew tap homebrew/command-not-found
@@ -281,11 +287,13 @@ zstyle ':completion:*' rehash true                              # automatically 
 # Speed up completions
 zstyle ':completion:*' accept-exact '*(N)'
 zstyle ':completion:*' use-cache on
-zstyle ':completion:*' cache-path ~/.zsh/cache
-HISTFILE=~/.zhistory
+zstyle ':completion:*' cache-path $HOME/.zsh/cache
+HISTFILE=$HOME/.zhistory
 HISTSIZE=10000
 SAVEHIST=10000
 
+
+# neovim
 if (( $+commands[nvim] )); then 
     export VISUAL=$(which nvim)
     export EDITOR="$VISUAL"
@@ -381,11 +389,14 @@ zstyle ':fzf-tab:*' prefix ' '
 if ! (( $+commands[python] )); then
     #python is not installed
     if [ -d $ASDF_DIR ]; then 
-	if (( $+commands[apt] )); then
-		# install requirements
-		sudo apt install build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev curl git libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+        if [[ "$(uname)" == 'Linux' ]]; then
+            if (( $+commands[apt] )); then
+                # install requirements
+                sudo apt install build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev curl git libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+            fi
+        fi
 
-	asdf plugin add python
+        asdf plugin add python
         asdf install python
         # asdf global python latest
     fi
@@ -412,8 +423,8 @@ if ! (( $+commands[node] )); then
     #nodejs is not installed
     if [ -d $ASDF_DIR ]; then 
         asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
-        asdf install nodejs latest
-        asdf global nodejs latest
+        asdf install nodejs
+        # asdf global nodejs latest
         npm install --global yarn
         asdf reshim 
 
@@ -461,16 +472,6 @@ fi
 [ -f /opt/asdf-vm/asdf.sh ] && source /opt/asdf-vm/asdf.sh
 
 #  ╭──────────────────────────────────────────────────────────╮
-#  │                         dotbare                          │
-#  ╰──────────────────────────────────────────────────────────╯
-#  ┌
-#  │ dotbare completion                                       
-#  └                                                           
-# source ${ZPLUGINDIR}/dotbare/dotbare.plugin.zsh
-# _dotbare_completion_cmd
-#_dotbare_completion_git
-
-#  ╭──────────────────────────────────────────────────────────╮
 #  │                          cheat                           │
 #  ╰──────────────────────────────────────────────────────────╯
 #source $HOME/.zplug/repos/cheat/cheat/scripts/cheat.zsh
@@ -488,15 +489,18 @@ export PATH="$HOME/dev/flutter/bin:$PATH"
 #  │                            GO                            │
 #  ╰──────────────────────────────────────────────────────────╯
 
-# export GOPATH="$HOME/dev/go"
-# export PATH=$(go env GOPATH)/bin:$PATH
 
-if ! (( $+commands[go] )); then
     #GO is not installed
+if ! (( $+commands[go] )); then
+    # if apt is installed, install coreutils and curl
+    if [[ $(uname) == 'Linux' && $(which apt) ]]; then
+        sudo apt install coreutils curl
+    fi
+
     if [ -d $ASDF_DIR ]; then 
         asdf plugin add golang
-        asdf install golang latest
-	    asdf global golang latest
+        asdf install golang
+	    # asdf global golang 
 	    . ~/.asdf/plugins/golang/set-env.zsh
     fi
 fi
@@ -511,24 +515,24 @@ export PATH="${PATH}:$(go env GOPATH)/bin"
 
 if ! (( $+commands[lsd] )); then
     # lsd is not installed
-    if (( $+commands[brew] )); then 
+    if [[ $(uname) == 'Linux' && $(which apt) ]]; then
+        sudo apt install lsd -y
+    elif [[ $(uname) == 'Darwin' && $(which brew) ]]; then 
         brew install lsd
-    elif (( $+commands[yay] )); then 
+    elif [[ $(uname) == 'Linux' && $(which yay) ]]; then 
         yay -S lsd
-    elif (( $+commands[apt] )); then 
-	sudo apt install lsd -y 
     fi
 fi
 
 
-export WORKON_HOME=~/.virtualenvs
+export WORKON_HOME=$HOME/.virtualenvs
 #. $(asdf where python)/bin/virtualenvwrapper.sh
 # . $(which virtualenvwrapper.sh)
 
 # install zathura 
 #
 if ! (( $+commands[zathura] )); then
-    if  [[ $OSTYPE == 'darwin'* ]]; then
+    if  [[ $(uname) == 'Darwin' && $(which brew) ]]; then
         brew tap zegervdv/zathura
         brew install zathura
         if ! [[ -f $(brew --prefix zathura)/lib/zathura/libpdf-mupdf.dylib ]]; then
@@ -536,9 +540,9 @@ if ! (( $+commands[zathura] )); then
             mkdir -p $(brew --prefix zathura)/lib/zathura
             ln -s $(brew --prefix zathura-pdf-mupdf)/libpdf-mupdf.dylib $(brew --prefix zathura)/lib/zathura/libpdf-mupdf.dylib
         fi
-    elif (( $+commands[yay] )); then
+    elif [[ $(uname) == 'Linux' && $(which yay) ]]; then
         yay -S zathura zathura-pdf-mupdf xdotool
-    elif (( $+commands[apt] )); then
+    elif [[ $(uname) == 'Linux' && $(which apt) ]]; then
 	sudo apt install zathura -y
     fi
 fi 
@@ -580,7 +584,7 @@ export PATH
 
 # eval "$(fasd --init auto)"
 fpath=($ASDF_DIR/completions $fpath)
-source "${XDG_CONFIG_HOME:-$HOME/.config}/asdf-direnv/zshrc"
+#source "${XDG_CONFIG_HOME:-$HOME/.config}/asdf-direnv/zshrc"
 
 
 typeset -U PATH # duplicates of PATH variables

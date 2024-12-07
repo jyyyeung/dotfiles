@@ -1,4 +1,10 @@
 
-# Begin added by argcomplete
-fpath=( /Users/jyyyeung/Library/Python/3.9/lib/python/site-packages/argcomplete/bash_completion.d "${fpath[@]}" )
-# End added by argcomplete
+
+if [[ "$(uname)" == 'Darwin' ]]; then
+  fpath=( "$HOME/Library/Python/3.9/lib/python/site-packages/argcomplete/bash_completion.d" "${fpath[@]}" )
+fi
+
+if [[ "$(uname)" == 'Linux' ]]; then
+  fpath=( "$HOME/.local/lib/python3.10/site-packages/argcomplete/bash_completion.d" "${fpath[@]}" )
+fi
+

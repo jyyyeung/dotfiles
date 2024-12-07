@@ -1,6 +1,6 @@
 
 export PATH="$PATH":/Users/jyyyeung/.node/bin
 
-[[ -s "/Users/jyyyeung/.gvm/scripts/gvm" ]] && source "/Users/jyyyeung/.gvm/scripts/gvm"
+[[ -s "$HOME/.gvm/scripts/gvm" ]] && source "$HOME/.gvm/scripts/gvm"
 
 export PATH="$HOME/.poetry/bin:$PATH"
