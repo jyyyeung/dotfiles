@@ -574,7 +574,7 @@ export PATH
 #[[ -s /etc/profile.d/autojump.zsh ]] && source /etc/profile.d/autojump.zsh
 
 # eval "$(fasd --init auto)"
-# source "${XDG_CONFIG_HOME:-$HOME/.config}/asdf-direnv/zshrc"
+source "${XDG_CONFIG_HOME:-$HOME/.config}/asdf-direnv/zshrc"
 
 
 typeset -U PATH # duplicates of PATH variables
