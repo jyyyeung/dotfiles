@@ -81,8 +81,8 @@ fi
 #  │                    enable completions                    │
 #  ╰──────────────────────────────────────────────────────────╯
 # initialise completions with ZSH's compinit
-#autoload -Uz compinit && compinit
-#autoload -U bashcompinit && bashcompinit
+autoload -Uz compinit && compinit
+autoload -U bashcompinit && bashcompinit
 
 
 if (( $+commands[kubectl] )); then  
