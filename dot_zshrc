@@ -72,7 +72,7 @@ fpath=(${ASDF_DIR}/completions $fpath)
 test -d /home/linuxbrew && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 if ! (( $+commands[brew] )); then
     # install homebrew if not found 
-    if [[ "$(uname -m)" != "aarch64" ]];
+    if [[ "$(uname -m)" != "aarch64" ]]; then
       /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
     if (( $+commands[yay] )); then 
