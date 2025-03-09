@@ -95,6 +95,7 @@ fi
 # NOTE: put here because asliases file hopes to overwrite some aliases defined by omz
 # Oh-My-Zsh plugins rely on stuff in its lib directory
 ZSH=$ZPLUGINDIR/ohmyzsh
+ZSH_CACHE_DIR=$ZSH/cache
 
 if [ -d $ZSH/lib ]; then
 	for _f in $ZSH/lib/*.zsh; do
