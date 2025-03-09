@@ -575,7 +575,7 @@ if [[ $OSTYPE == 'darwin'* ]]; then
     # <<< conda initialize <<<
 fi
 
-fpath+=~/.zfunc
+fpath=(~/.zfunc $fpath)
 
 path=($HOME'/.local/bin' $path)
 
