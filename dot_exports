@@ -50,7 +50,7 @@ export CHEAT_USE_FZF=true
 # === Mac only ========================================================
 
 if [[ "$(uname)" == 'Darwin' ]]; then
-  export BREW_PREFIX = $(brew --prefix)
+  export BREW_PREFIX="$(brew --prefix)"
   # python asdf
   export LDFLAGS="-L/opt/homebrew/opt/zlib/lib -L$(brew --prefix bzip2)/lib -L/opt/homebrew/opt/openssl@3/lib"
   export CPPFLAGS="-I/opt/homebrew/opt/zlib/include -I$(brew --prefix bzip2)/include -I/opt/homebrew/opt/openssl@3/include"
