@@ -227,6 +227,7 @@ repo_plugins=(
 
 plugin-source $repo_plugins
 
+# One plugin relies on repo plugin, so load after sourcing repo plugins
 plugin-load $plugins
 
 # command-not-found 
