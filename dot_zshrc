@@ -203,7 +203,6 @@ repos=(
 # now load your plugins
 plugin-clone $repos
 
-plugin-load $plugins
 
 # zsh-bench doesn't have a plugin file
 # it just needs added to your $PATH
@@ -227,6 +226,8 @@ repo_plugins=(
 )
 
 plugin-source $repo_plugins
+
+plugin-load $plugins
 
 # command-not-found 
 
