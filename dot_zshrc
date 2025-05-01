@@ -173,9 +173,9 @@ plugins=(
   # loads everying required for asdf 
   kiurchv/asdf.plugin.zsh
 
-  rupa/z
-  changyuheng/fz
-  babarot/enhancd
+#   rupa/z
+#   changyuheng/fz
+  babarot/enhancd,initfile=init.sh
 
   zdharma-continuum/fast-syntax-highlighting # syntax highlighting in zsh 
 
@@ -263,8 +263,8 @@ fi
 
 
 #  ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-less=eless
-cat=bat
+# less=eless
+# cat=bat
 
 #  ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
 
@@ -272,24 +272,27 @@ cat=bat
 #  ╭──────────────────────────────────────────────────────────╮
 #  │                           fzf                            │
 #  ╰──────────────────────────────────────────────────────────╯
-local extract="
-    # trim input
-    local in=\${\${\"\$(<{f})\"%\$'\0'*}#*\$'\0'}
-    # get ctxt for current completion
-    local -A ctxt=(\"\${(@ps:\2:)CTXT}\")
-    # real path
-    local realpath=\${ctxt[IPREFIX]}\${ctxt[hpre]}\$in
-    realpath=\${(Qe)~realpath}
-"
+# # The following block defines a local variable 'extract' used for extracting and previewing file paths in fzf-tab completions.
+# # It trims the input, parses the completion context, and resolves the real path for previewing.
+# local extract="
+#     # trim input
+#     local in=\${\${\"\$(<{f})\"%\$'\0'*}#*\$'\0'}
+#     # get ctxt for current completion
+#     local -A ctxt=(\"\${(@ps:\2:)CTXT}\")
+#     # real path
+#     local realpath=\${ctxt[IPREFIX]}\${ctxt[hpre]}\$in
+#     realpath=\${(Qe)~realpath}
+# "
 
 #  ╭──────────────────────────────────────────────────────────╮
 #  │                          Zstyle                          │
 #  ╰──────────────────────────────────────────────────────────╯
 
+# The following zstyle settings configure Zsh's completion system and fzf-tab plugin for enhanced fuzzy completion and previews.
 
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'       # Case insensitive tab completion
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"         # Colored completion (different colors for dirs/files/etc)
-zstyle ':completion:*' rehash true                              # automatically find new executables in path 
+zstyle ':completion:*' rehash true                              # Automatically find new executables in path 
 # Speed up completions
 zstyle ':completion:*' accept-exact '*(N)'
 zstyle ':completion:*' use-cache on
@@ -298,66 +301,55 @@ HISTFILE=$HOME/.zhistory
 HISTSIZE=10000
 SAVEHIST=10000
 
-
-# neovim
-if (( $+commands[nvim] )); then 
-    export VISUAL=$(which nvim)
-    export EDITOR="$VISUAL"
-    export SYSTEMD_EDITOR="$VISUAL"
-    export SUDO_EDITOR="$VISUAL"
-fi 
-WORDCHARS=${WORDCHARS//\/[&.;]}                                 # Don't consider certain characters part of the word
-
-##  
-##  │ enable zsh tab-completion                                
-##  └                                                           
+# Enable menu selection for completions (arrow keys to select)
 zstyle ':completion:*' menu select
 
-zstyle ':completion::complete:*' gain-privileges 1
-zstyle ':completion:*' list-colors ''
-#zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
-zstyle ':completion:*:messages' format ' %F{purple} -- %d --%f'
-#zstyle ':completion:*:warnings' format ' %F{red}-- no matches found --%f'
- 
-##  ┌
-##  │ formatting and messages                                  
-##  └                                                           
-## http://www.masterzen.fr/2009/04/19/in-love-with-zsh-part-one/
+zstyle ':completion::complete:*' gain-privileges 1              # Allow completions to gain privileges (e.g., sudo)
+zstyle ':completion:*' list-colors ''                           # Reset list-colors (can be overridden below)
+zstyle ':completion:*:messages' format ' %F{purple} -- %d --%f' # Format for completion messages
+
+# Verbose and formatted completion messages
 zstyle ':completion:*' verbose yes
 zstyle ':completion:*:descriptions' format "$fg[yellow]%B--- %d%b"
 zstyle ':completion:*:warnings' format "$fg[red]No matches for:$reset_color %d"
 zstyle ':completion:*:corrections' format '%B%d (errors: %e)%b'
-##zstyle ':completion:*' group-name ''
-          
-#zstyle ':completion:*:git-checkout:*' sort false # disable sort when completing `git checkout`             
+
+# Group support and colorizing for completions
 zstyle ':completion:*:descriptions' format '[%d]' # set descriptions format to enable group support
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS} # set list-colors to enable filename colorizing
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'lsd -1 --color=always $realpath' # preview directory's content with exa when completing cd                                
-zstyle ':fzf-tab:*' switch-group '[' ']' # switch group using `[` and `]`     
 
-# give a preview of commandline arguments when completing `kill`
+# --- fzf-tab specific settings ---
+# These settings control how fzf-tab previews and interacts with completions.
+
+# When completing 'cd', preview the directory's content using 'lsd' (a modern ls alternative)
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'lsd -1 --color=always $realpath'
+# Use [ and ] to switch between completion groups in fzf-tab
+zstyle ':fzf-tab:*' switch-group '[' ']'
+
+# For process completions (e.g., kill), preview the command line for the selected PID
 zstyle ':completion:*:*:*:*:processes' command "ps -u $USER -o pid,user,comm -w -w"
 zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-preview \
   '[[ $group == "[process ID]" ]] && ps --pid=$word -o cmd --no-headers -w -w'
 
+# On macOS, use a different ps command for process preview
 if  [[ $OSTYPE == 'darwin'* ]]; then
     zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-preview \
         '[[ $group == "[process ID]" ]] && ps -p$word -o command'
 fi
+# Set the preview window for process completions to 3 lines, wrapped
 zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-flags --preview-window=down:3:wrap
 
-
-
+# Example (commented out): preview systemd unit status when completing systemctl
 #zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl status $word' # Show systemd unit status   
-               
+
+# Example (commented out): preview file contents with less
 ##zstyle ':fzf-tab:complete:*:*' fzf-preview '$less ${(Q)realpath}' # Show file contents     
 ##export LESSOPEN='|~/.lessfilter %s'
-                
+
+# Preview environment variable values when completing variable names
 zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' fzf-preview 'echo ${(P)word}' # tab environment variables preview   
 
-##  ┌
-##  │ Git fzf tab                                              
-##  └                                                           
+# --- Git fzf-tab previews (commented out, can be enabled as needed) ---
 #zstyle ':fzf-tab:complete:git-(add|diff|restore):*' fzf-preview 'git diff $word | delta'
 #zstyle ':fzf-tab:complete:git-log:*' fzf-preview 'git log --color=always $word'
 #zstyle ':fzf-tab:complete:git-help:*' fzf-preview 'git help $word | bat -plman --color=always'
@@ -386,7 +378,7 @@ zstyle ':fzf-tab:complete:(\\|*/|)man:*' fzf-preview 'man $word'
 
             
 zstyle ':fzf-tab:*' continuous-trigger ' ' # fzf space continuous trigger    
-zstyle ':fzf-tab:*' accept-line enter                                                
+# zstyle ':fzf-tab:*' accept-line enter                                                
 #zstyle ':completion:complete:*:options' sort false
 
 zstyle ':fzf-tab:*' prefix ' '
