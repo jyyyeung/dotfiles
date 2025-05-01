@@ -1,3 +1,4 @@
+# zmodload zsh/zprof
 #  Use Powerline                                          
 USE_POWERLINE="true"
 
@@ -10,15 +11,6 @@ if [[ ! -d $ZPLUGINDIR/powerlevel10k ]]; then
   git clone --quiet --depth 1 https://github.com/romkatv/powerlevel10k.git $ZPLUGINDIR/powerlevel10k
 fi
 source $ZPLUGINDIR/powerlevel10k/powerlevel10k.zsh-theme
-
-if (( $+commands[pacman] )); then
-    # install yay if not installed in pacman systems 
-    if ! (( $+commands[yay] )); then
-        pacman -S --needed git base-devel && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
-        yay -Y --gendb
-        yay -Y --devel --combinedupgrade --batchinstall --save
-    fi
-fi
 
 #  ┌
 #  │ Enable Powerlevel10k instant prompt. Should stay         
@@ -42,6 +34,16 @@ fi
 #  │ completion for kitty                                     
 #  └                                                           
 #kitty + complete setup zsh | source /dev/stdin
+
+if (( $+commands[pacman] )); then
+    # install yay if not installed in pacman systems 
+    if ! (( $+commands[yay] )); then
+        pacman -S --needed git base-devel && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
+        yay -Y --gendb
+        yay -Y --devel --combinedupgrade --batchinstall --save
+    fi
+fi
+
  
 #  Loads zplug                                              
 ZPLUGINDIR=${ZPLUGINDIR:-${ZDOTDIR:-$HOME/.config/zsh}/plugins} # the dir where all zsh plugins are stored
@@ -85,8 +87,20 @@ fi
 #  │                    enable completions                    │
 #  ╰──────────────────────────────────────────────────────────╯
 # initialise completions with ZSH's compinit
-autoload -Uz compinit && compinit
-autoload -U bashcompinit && bashcompinit
+# autoload -Uz compinit && compinit
+# if type brew &>/dev/null; then
+#     FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
+
+#     autoload -Uz compinit
+#     compinit
+# if
+autoload -Uz compinit 
+if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
+	compinit;
+else
+	compinit -C;
+fi;
+# autoload -U bashcompinit && bashcompinit
 
 
 if (( $+commands[kubectl] )); then  
@@ -553,22 +567,22 @@ if [[ -d "~/.config/i3" ]]; then
 fi
 
 
-if [[ $OSTYPE == 'darwin'* ]]; then
-    # >>> conda initialize >>>
-    # !! Contents within this block are managed by 'conda init' !!
-    __conda_setup="$('/opt/homebrew/Caskroom/miniconda/base/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-    if [ $? -eq 0 ]; then
-        eval "$__conda_setup"
-    else
-        if [ -f "/opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh" ]; then
-            . "/opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh"
-        else
-            export PATH="/opt/homebrew/Caskroom/miniconda/base/bin:$PATH"
-        fi
-    fi
-    unset __conda_setup
-    # <<< conda initialize <<<
-fi
+# if [[ $OSTYPE == 'darwin'* ]]; then
+#     # >>> conda initialize >>>
+#     # !! Contents within this block are managed by 'conda init' !!
+#     __conda_setup="$('/opt/homebrew/Caskroom/miniconda/base/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+#     if [ $? -eq 0 ]; then
+#         eval "$__conda_setup"
+#     else
+#         if [ -f "/opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh" ]; then
+#             . "/opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh"
+#         else
+#             export PATH="/opt/homebrew/Caskroom/miniconda/base/bin:$PATH"
+#         fi
+#     fi
+#     unset __conda_setup
+#     # <<< conda initialize <<<
+# fi
 
 fpath=(~/.zfunc $fpath)
 
@@ -589,3 +603,4 @@ typeset -U PATH # duplicates of PATH variables
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
+# zprof
