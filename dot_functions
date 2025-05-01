@@ -32,7 +32,14 @@ function plugin-source {
 function plugin-load {
   local repo plugdir initfile
   ZPLUGINDIR=${ZPLUGINDIR:-${ZDOTDIR:-$HOME/.config/zsh}/plugins}
-  for repo in $@; do
+  for repo_arg in $@; do
+    repo=$(echo $repo_arg | cut -d',' -f1)
+    # Check if init file is specified in repo 
+    if [[ "$repo_arg" == *,initfile=* ]]; then
+      initfile="${repo_arg#*,initfile=}"
+    else
+      initfile=$ZPLUGINDIR/${repo:t}.plugin.zsh
+    fi
     # :t gets the tail of the pathname
     plugdir=$ZPLUGINDIR/${repo:t}
     initfile=$plugdir/${repo:t}.plugin.zsh
