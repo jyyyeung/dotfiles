@@ -51,7 +51,7 @@ export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --margin=1 --padding=1 --color=dark --inline-info --expect=/'
 
 export ENHANCD_USE_ABBREV=true
-export ENHANCD_FILTER="fzf --preview 'exa -al --tree --level 1 --group-directories-first --git-ignore --header --git --no-user --no-time --no-filesize --no-permissions {}' --preview-window right,50% --height 35% --reverse --ansi :fzy :peco"
+export ENHANCD_FILTER="fzf --preview 'exa -al --tree --level 1 --group-directories-first --git-ignore --header --git --no-user --no-time --no-filesize --no-permissions {}' --ignore-case --preview-window right,50% --height 35% --reverse --ansi :fzy :peco"
 
 export CHEAT_USE_FZF=true
 
