@@ -19,3 +19,5 @@ export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 
 
 . "$HOME/.cargo/env"
+
+complete -C /usr/local/bin/hcloud hcloud
