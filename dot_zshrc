@@ -82,13 +82,13 @@ if ! (( $+commands[mise] )); then
   curl https://mise.run | sh
   mise i 
 fi
+eval "$($MISE_BIN activate zsh)"
 
 if ! (( $+commands[usage] )); then
   mise use -g usage
 fi
 mise completion zsh > $COMPLETIONS_PATH/_mise
 
-eval "$($MISE_BIN activate zsh)"
 
 test -d /home/linuxbrew && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 if ! (( $+commands[brew] )); then
