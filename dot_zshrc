@@ -1,4 +1,8 @@
 # zmodload zsh/zprof
+
+# VARIABLES 
+COMPLETIONS_PATH=$HOME/.local/share/zsh/completions
+
 #  Use Powerline                                          
 USE_POWERLINE="true"
 
@@ -76,7 +80,13 @@ fi
 MISE_BIN=$HOME/.local/bin/mise
 if ! (( $+commands[mise] )); then
   curl https://mise.run | sh
+  mise i 
 fi
+
+if ! (( $+commands[usage] )); then
+  mise use -g usage
+fi
+mise completion zsh > $COMPLETIONS_PATH/_mise
 
 eval "$($MISE_BIN activate zsh)"
 
@@ -95,6 +105,11 @@ fi
 #  ╭──────────────────────────────────────────────────────────╮
 #  │                    enable completions                    │
 #  ╰──────────────────────────────────────────────────────────╯
+if ! [ -d $COMPLETIONS_PATH ]; then 
+  mkdir -p $COMPLETIONS_PATH
+fi;
+typeset -gaU fpath=($fpath $COMPLETIONS_PATH)
+
 # initialise completions with ZSH's compinit
 # autoload -Uz compinit && compinit
 # if type brew &>/dev/null; then
