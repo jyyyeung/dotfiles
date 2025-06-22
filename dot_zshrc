@@ -298,6 +298,9 @@ if (( $+commands[brew] )); then
     fi   
 fi
 
+if (( $+commands[delta] )); then
+  brew install git-delta
+fi
 
 
 #  ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
