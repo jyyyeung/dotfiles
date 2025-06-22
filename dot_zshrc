@@ -62,15 +62,23 @@ if [[ ! -d $ZPLUGINDIR/fzf ]]; then
 fi
 
 # install asdf
-ASDF_DIR=$HOME/.asdf
-if [[ ! -d $HOME/.asdf ]]; then
-  git clone https://github.com/asdf-vm/asdf.git ~/.asdf 
+# ASDF_DIR=$HOME/.asdf
+# if [[ ! -d $HOME/.asdf ]]; then
+#   git clone https://github.com/asdf-vm/asdf.git ~/.asdf 
+# fi
+
+# # append completions to fpath
+# fpath=(${ASDF_DIR}/completions $fpath)
+# fpath+=~/.zfunc
+
+# Install mise 
+# curl https://mise.run | sh
+MISE_BIN=$HOME/.local/bin/mise
+if ! (( $+commands[mise] )); then
+  curl https://mise.run | sh
 fi
 
-
-# append completions to fpath
-fpath=(${ASDF_DIR}/completions $fpath)
-fpath+=~/.zfunc
+eval "$($MISE_BIN activate zsh)"
 
 test -d /home/linuxbrew && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 if ! (( $+commands[brew] )); then
@@ -185,8 +193,8 @@ plugins=(
 #   leophys/zsh-plugin-fzf-finder
 #   joshskidmore/zsh-fzf-history-search
 
-  # loads everying required for asdf 
-  kiurchv/asdf.plugin.zsh
+  # # loads everying required for asdf 
+  # kiurchv/asdf.plugin.zsh
 
 #   rupa/z
 #   changyuheng/fz
@@ -233,7 +241,7 @@ repo_plugins=(
   ohmyzsh/plugins/yarn # yarn alias
   ohmyzsh/plugins/sudo # double <esc> for sudo 
   ohmyzsh/plugins/git # git aliases
-  ohmyzsh/plugins/asdf # asdf aliases
+  # ohmyzsh/plugins/asdf # asdf aliases
   ohmyzsh/plugins/wp-cli
   ohmyzsh/plugins/macos
   ohmyzsh/plugins/pip
@@ -482,7 +490,7 @@ if ! (( $+commands[ruby] )); then
 fi
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-[ -f /opt/asdf-vm/asdf.sh ] && source /opt/asdf-vm/asdf.sh
+# [ -f /opt/asdf-vm/asdf.sh ] && source /opt/asdf-vm/asdf.sh
 
 #  ╭──────────────────────────────────────────────────────────╮
 #  │                          cheat                           │
@@ -596,7 +604,7 @@ export PATH
 #[[ -s /etc/profile.d/autojump.zsh ]] && source /etc/profile.d/autojump.zsh
 
 # eval "$(fasd --init auto)"
-fpath=($ASDF_DIR/completions $fpath)
+# fpath=($ASDF_DIR/completions $fpath)
 #source "${XDG_CONFIG_HOME:-$HOME/.config}/asdf-direnv/zshrc"
 
 
