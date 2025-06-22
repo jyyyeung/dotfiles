@@ -512,23 +512,23 @@ export PATH="$HOME/dev/flutter/bin:$PATH"
 
 
     #GO is not installed
-if ! (( $+commands[go] )); then
-    # if apt is installed, install coreutils and curl
-    if [[ $(uname) == 'Linux' && $(which apt) ]]; then
-        sudo apt install coreutils curl
-    fi
+# if ! (( $+commands[go] )); then
+#     # if apt is installed, install coreutils and curl
+#     if [[ $(uname) == 'Linux' && $(which apt) ]]; then
+#         sudo apt install coreutils curl
+#     fi
 
-    if [ -d $ASDF_DIR ]; then 
-        asdf plugin add golang
-        asdf install golang
-	    # asdf global golang 
-	    . ~/.asdf/plugins/golang/set-env.zsh
-    fi
-fi
+#     if [ -d $ASDF_DIR ]; then 
+#         asdf plugin add golang
+#         asdf install golang
+# 	    # asdf global golang 
+# 	    . ~/.asdf/plugins/golang/set-env.zsh
+#     fi
+# fi
 
-export GOPATH=$(asdf where golang)/packages
-export GOROOT=$(asdf where golang)/go
-export PATH="${PATH}:$(go env GOPATH)/bin"
+# export GOPATH=$(asdf where golang)/packages
+# export GOROOT=$(asdf where golang)/go
+# export PATH="${PATH}:$(go env GOPATH)/bin"
 
 #  ╭──────────────────────────────────────────────────────────╮
 #  │                           lsd                            │
