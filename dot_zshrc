@@ -30,6 +30,12 @@ fi
 #  └                                                           
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+# update chezmoi dotfiles 
+if (( $+commands[chezmoi] )); then
+  chezmoi update
+fi
+
+
 #  ┌
 #  │ completion for kitty                                     
 #  └                                                           
