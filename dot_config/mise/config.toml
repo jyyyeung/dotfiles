@@ -1,0 +1,4 @@
+[tools]
+java = "zulu-24"
+node = "latest"
+usage = "latest"
