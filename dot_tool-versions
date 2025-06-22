@@ -1,7 +1,8 @@
-python 3.10.5
+python 3.13.3
 nodejs 22.2.0
 direnv system
 java openjdk-24-loom+4-42
 neovim nightly
-golang 1.22.8
+golang 1.23.8
 rust 1.83.0
+pnpm 10.8.0

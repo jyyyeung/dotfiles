@@ -34,3 +34,7 @@
 	directory = /data/nfs/home/Atomic
 [credential "https://dev.azure.com"]
 	useHttpPath = true
+[credential "http://192.168.75.252:8081"]
+	provider = generic
+[credential "https://gitea.home.sheepyy039.xyz"]
+	provider = generic
