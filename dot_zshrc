@@ -300,16 +300,10 @@ fi
 
 # command not found for brew  
 if (( $+commands[brew] )); then 
-    if [[ $(uname) == 'Darwin' ]]; then
-        HB_CNF_HANDLER="$(brew --repository)/Library/Taps/homebrew/homebrew-command-not-found/handler.sh"
-    else
-        HB_CNF_HANDLER="$(brew --repository)/share/zsh/site-functions/_brew"
-    fi
-    if [ -f "$HB_CNF_HANDLER" ]; then
-        source "$HB_CNF_HANDLER"
-    else
-        brew tap homebrew/command-not-found
-    fi   
+   HOMEBREW_COMMAND_NOT_FOUND_HANDLER="$(brew --repository)/Library/Homebrew/command-not-found/handler.sh"
+  if [ -f "$HOMEBREW_COMMAND_NOT_FOUND_HANDLER" ]; then
+    source "$HOMEBREW_COMMAND_NOT_FOUND_HANDLER";
+  fi  
 fi
 
 if ! (( $+commands[delta] )); then
@@ -626,10 +620,6 @@ fi
 #     unset __conda_setup
 #     # <<< conda initialize <<<
 # fi
-HOMEBREW_COMMAND_NOT_FOUND_HANDLER="$(brew --repository)/Library/Homebrew/command-not-found/handler.sh"
-if [ -f "$HOMEBREW_COMMAND_NOT_FOUND_HANDLER" ]; then
-  source "$HOMEBREW_COMMAND_NOT_FOUND_HANDLER";
-fi
 
 fpath=(~/.zfunc $fpath)
 
