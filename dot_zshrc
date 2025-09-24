@@ -626,6 +626,10 @@ fi
 #     unset __conda_setup
 #     # <<< conda initialize <<<
 # fi
+HOMEBREW_COMMAND_NOT_FOUND_HANDLER="$(brew --repository)/Library/Homebrew/command-not-found/handler.sh"
+if [ -f "$HOMEBREW_COMMAND_NOT_FOUND_HANDLER" ]; then
+  source "$HOMEBREW_COMMAND_NOT_FOUND_HANDLER";
+fi
 
 fpath=(~/.zfunc $fpath)
 
