@@ -94,6 +94,12 @@ if ! (( $+commands[mise] )); then
   curl https://mise.run | sh
   mise i 
 fi
+# Only activate mise in *real* interactive terminals, not in VSCode/Cursor
+if [[ $- == *i* ]] && [[ "$TERM_PROGRAM" != "vscode" ]] && [[ -z "$CURSOR" ]]; then
+  # eval "$(/home/<username>/.local/bin/mise activate zsh)"
+  eval "$($MISE_BIN activate zsh)"
+fi
+
 
 if ! (( $+commands[usage] )); then
   mise use -g usage
@@ -605,7 +611,6 @@ fi
 #     # <<< conda initialize <<<
 # fi
 
-eval "$($MISE_BIN activate zsh)"
 
 fpath=(~/.zfunc $fpath)
 
