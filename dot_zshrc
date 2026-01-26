@@ -152,8 +152,8 @@ fi
 source $HOME/.aliases
 #  loads functions                                          
 source $HOME/.functions 
-#  loads exports                                            
-source $HOME/.exports
+#  loads exports (loaded in zprofile)                                            
+# source $HOME/.exports
 
 #  ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
 
