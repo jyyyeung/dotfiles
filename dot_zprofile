@@ -12,6 +12,8 @@ export LC_ALL=en_US.UTF-8
 # loads exports 
 source "$HOME/.exports"
 
+eval "$(mise activate zsh --shims)"
+
 # solve "too many open files"
 ulimit -n 10240
 
