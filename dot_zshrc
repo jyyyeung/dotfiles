@@ -94,7 +94,6 @@ if ! (( $+commands[mise] )); then
   curl https://mise.run | sh
   mise i 
 fi
-eval "$($MISE_BIN activate zsh)"
 
 if ! (( $+commands[usage] )); then
   mise use -g usage
@@ -605,6 +604,8 @@ fi
 #     unset __conda_setup
 #     # <<< conda initialize <<<
 # fi
+
+eval "$($MISE_BIN activate zsh)"
 
 fpath=(~/.zfunc $fpath)
 
