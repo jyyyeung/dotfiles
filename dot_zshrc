@@ -543,11 +543,11 @@ export PATH="$HOME/dev/flutter/bin:$PATH"
 #     fi
 # fi
 
-if (( $+commands[go] )); then
-  # export GOPATH=$(mise where go)/packages
-  # export GOROOT=$(mise where go)/go
-  export PATH="${PATH}:$(go env GOPATH)/bin"
-fi
+# if (( $+commands[go] )); then
+#   # export GOPATH=$(mise where go)/packages
+#   # export GOROOT=$(mise where go)/go
+#   export PATH="${PATH}:$(go env GOPATH)/bin"
+# fi
 
 #  ╭──────────────────────────────────────────────────────────╮
 #  │                           lsd                            │
