@@ -33,8 +33,8 @@ export KUNST_POSITION="+0+0"
 export KUNST_MUSIC_DIR="$HOME/OneDrive/9x-Misc/95-music"
 
 # --- Go ------------------------------------------------------------
-export ASDF_DIR="$HOME/.asdf"
-export ASDF_GOLANG_MOD_VERSION_ENABLED=true
+# export ASDF_DIR="$HOME/.asdf"
+# export ASDF_GOLANG_MOD_VERSION_ENABLED=true
 #export GOPROXY="https://proxy.golang.org,direct"
 
 
