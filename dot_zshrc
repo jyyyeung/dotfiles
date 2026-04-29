@@ -99,7 +99,12 @@ fi
 #   # eval "$(/home/<username>/.local/bin/mise activate zsh)"
 #   eval "$($MISE_BIN activate zsh)"
 # fi
+#
 
+
+if (( $+commands[git-gtr] )); then 
+  eval "$(git gtr completion zsh)"
+fi
 
 if ! (( $+commands[usage] )); then
   mise use -g usage
