@@ -1,0 +1,72 @@
+# ~/.gitconfig - Managed by chezmoi
+[user]
+  name = "{{ .username }}"
+  email = "{{ .email }}"
+
+[core]
+  editor = "{{ .editor }}"
+  pager = delta
+  autocrlf = input
+  whitespace = trailing-space,space-before-tab
+
+[init]
+  defaultBranch = main
+
+[pull]
+  rebase = true
+
+[push]
+  default = simple
+  autoSetupRemote = true
+
+[merge]
+  conflictstyle = diff3
+  tool = nvim
+
+[diff]
+  tool = nvim
+  colorMoved = default
+
+[delta]
+  features = side-by-side,line-numbers,decorations
+  navigate = true
+  side-by-side = true
+  line-numbers = true
+  hyperlinks = true
+  hyperlinks-file-link-format = "file://{path}"
+  # Syntax highlighting
+  syntax-theme = GitHub
+
+[delta "decorations"]
+  commit-decoration-style = bold yellow box
+  file-style = bold cyan
+  file-decoration-style = ul
+
+[delta "line-numbers"]
+  zero-style = dim gray
+  left-style = gray
+  right-style = gray
+
+[alias]
+  # Shortcuts
+  s = status -sb
+  a = add
+  c = commit
+  co = checkout
+  b = branch
+  d = diff
+  l = log --oneline --graph --decorate
+  p = push
+  pl = pull
+  # Enhanced
+  lg = log --oneline --graph --decorate --all
+  dc = diff --cached
+  ca = commit -a
+  # Cleanup
+  prune = "!git fetch --prune && git branch -vv | grep 'gone]' | awk '{print $1}' | xargs -r git branch -d"
+  # Lazygit
+  lgui = "!lazygit"
+
+# Credential helper (use Bitwarden via shell command if needed)
+# [credential]
+#   helper = "!f() { bw get password github-token; }; f"

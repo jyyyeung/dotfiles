@@ -1,0 +1,55 @@
+#!/bin/bash
+# run_once_install_cli_tools.sh
+# Idempotent installer for core terminal tools
+# Safe to run multiple times; skips already-installed packages
+
+set -e
+
+log() { echo "🔧 $*"; }
+warn() { echo "⚠️  $*" >&2; }
+
+# macOS: Homebrew
+if [[ "$(uname -s)" == "Darwin" ]] && ! command -v brew &>/dev/null; then
+  log "Installing Homebrew..."
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+# Package lists
+MACOS_PACKAGES=(
+  zoxide starship eza bat ripgrep fd fzf jq yq httpie delta lazygit tldr
+  mise keychain zsh-syntax-highlighting zsh-autosuggestions
+)
+
+LINUX_PACKAGES=(
+  zoxide starship eza bat ripgrep fd fzf jq yq httpie git-delta lazygit tldr
+  mise keychain
+)
+
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  log "Installing macOS packages via Homebrew..."
+  for pkg in "${MACOS_PACKAGES[@]}"; do
+    brew list "$pkg" &>/dev/null || brew install "$pkg"
+  done
+elif [[ "$(uname -s)" == "Linux" ]]; then
+  log "Installing Linux packages (apt)..."
+  sudo apt update -qq
+  for pkg in "${LINUX_PACKAGES[@]}"; do
+    command -v "$pkg" &>/dev/null || sudo apt install -y "$pkg"
+  done
+  # fzf often needs manual install on Linux
+  if ! command -v fzf &>/dev/null; then
+    log "Installing fzf via git..."
+    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+    ~/.fzf/install --all --no-bash --no-fish
+  fi
+fi
+
+# mise runtime manager (polyglot)
+if ! command -v mise &>/dev/null; then
+  log "Installing mise..."
+  curl https://mise.jdx.dev/install.sh | sh
+fi
+
+log "✅ CLI tools installation complete"

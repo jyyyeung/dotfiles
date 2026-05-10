@@ -1,0 +1,121 @@
+# ~/.config/starship/starship.toml - Cross-platform, dev-focused prompt
+
+# Prompt order
+format = """
+$directory\
+$git_branch\
+$git_status\
+$package\
+$nodejs\
+$python\
+$rust\
+$golang\
+$docker_context\
+$kubernetes\
+$aws\
+$cmd_duration\
+$line_break\
+$character"""
+
+# Disable default blank line at start
+add_newline = true
+
+# Directory: show full path in home, truncate elsewhere
+[directory]
+style = "bold blue"
+truncation_length = 3
+truncate_to_repo = true
+read_only = " "
+
+# Git: concise but informative
+[git_branch]
+style = "bold green"
+symbol = " "
+
+[git_status]
+style = "bold red"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+up_to_date = "✓"
+untracked = "?${count}"
+stashed = "≡${count}"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+# Package version (from package.json, Cargo.toml, etc.)
+[package]
+style = "bold yellow"
+symbol = "📦 "
+display_private = true
+
+# Language runtimes (show only in relevant projects)
+[nodejs]
+style = "bold green"
+symbol = " "
+format = "[$symbol($version )]($style)"
+detect_files = ["package.json", "pnpm-lock.yaml", "yarn.lock"]
+
+[python]
+style = "bold yellow"
+symbol = " "
+format = "[$symbol($version )]($style)"
+pyenv_version_name = true
+detect_files = ["requirements.txt", "pyproject.toml", "Pipfile"]
+
+[rust]
+style = "bold orange"
+symbol = " "
+format = "[$symbol($version )]($style)"
+
+[golang]
+style = "bold cyan"
+symbol = " "
+format = "[$symbol($version )]($style)"
+
+# Infrastructure contexts
+[docker_context]
+style = "bold blue"
+symbol = "🐳 "
+format = "[$symbol$context]($style) "
+detect_files = ["docker-compose.yml", "Dockerfile"]
+detect_extensions = [".dockerfile"]
+
+[kubernetes]
+style = "bold cyan"
+symbol = "☸ "
+format = "[$symbol$context( \\($namespace\\))]($style) "
+disabled = false
+
+[aws]
+style = "bold yellow"
+symbol = " "
+format = '[$symbol($profile )(\($region\) )]($style)'
+disabled = false
+
+# Command duration: show if > 5s
+[cmd_duration]
+min_time = 5000
+style = "dimmed yellow"
+format = "[⏱ $duration]($style) "
+
+# Prompt character
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+vicmd_symbol = "[❮](bold yellow)"
+
+
+# ─────────────────────────────────────────────────────────────
+# Optional: Disable modules you don't use (reduce noise)
+# ─────────────────────────────────────────────────────────────
+
+# [battery]
+# disabled = true
+
+# [time]
+# disabled = true
+# format = '[$time]($style) '
+# time_format = "%H:%M"

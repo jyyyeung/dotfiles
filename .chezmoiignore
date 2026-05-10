@@ -1,0 +1,20 @@
+# Secrets & credentials
+dot_config/zsh/secrets.zsh
+dot_config/zsh/*secret*
+dot_*env*
+dot_netrc
+dot_github/credentials*
+dot_aws/credentials
+dot_ssh/id_*
+dot_ssh/known_hosts
+*.key
+*.pem
+*.p12
+
+# Machine-specific state
+.local/share/zinit/**/cache/**
+.local/state/**
+.cache/**
+
+# OS-specific binaries (managed externally)
+.local/bin/*

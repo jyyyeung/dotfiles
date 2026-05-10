@@ -1,0 +1,127 @@
+# ~/.tmux.conf - Managed by chezmoi. Edit source, not this file.
+# Source: {{ .chezmoi.sourceFile }}
+
+# ─────────────────────────────────────────────────────────────
+# Core Settings
+# ─────────────────────────────────────────────────────────────
+
+# Use C-a as prefix (like screen) for muscle memory
+unbind C-b
+set -g prefix C-a
+bind C-a send-prefix
+
+# Enable mouse support (click to select pane/window)
+set -g mouse on
+
+# Vi-style copy mode
+setw -g mode-keys vi
+
+# Increase history limit
+set -g history-limit 10000
+
+# Set terminal to screen-256color for better color support
+set -g default-terminal "screen-256color"
+
+# ─────────────────────────────────────────────────────────────
+# Status Bar (clean, informative)
+# ─────────────────────────────────────────────────────────────
+
+set -g status-bg default
+set -g status-fg default
+set -g status-left "#[fg=green,bold]#S#[default] "
+set -g status-right "#[fg=cyan]#(date +'%H:%M')#[default]"
+set -g status-interval 60
+
+# Window list style
+setw -g window-status-format "#[fg=white]#I:#W#[default]"
+setw -g window-status-current-format "#[fg=yellow,bold]#I:#W#[default]"
+
+# ─────────────────────────────────────────────────────────────
+# Key Bindings
+# ─────────────────────────────────────────────────────────────
+
+# Split panes with vi-style keys
+bind | split-window -h
+bind - split-window -v
+
+# Navigate panes with vi-style keys
+bind h select-pane -L
+bind j select-pane -D
+bind k select-pane -U
+bind l select-pane -R
+
+# Resize panes (hold prefix + key)
+bind -r H resize-pane -L 5
+bind -r J resize-pane -D 5
+bind -r K resize-pane -U 5
+bind -r L resize-pane -R 5
+
+# Quick window navigation
+bind 0 select-window -t 0
+bind 1 select-window -t 1
+bind 2 select-window -t 2
+bind 3 select-window -t 3
+bind 4 select-window -t 4
+bind 5 select-window -t 5
+bind 6 select-window -t 6
+bind 7 select-window -t 7
+bind 8 select-window -t 8
+bind 9 select-window -t 9
+
+# Copy mode: enter with prefix + [, exit with q
+bind [ copy-mode
+bind p paste-buffer
+
+# Synchronize panes (type in all at once)
+bind C-s set-window-option synchronize-panes
+
+# Reload config on the fly
+bind r source-file ~/.tmux.conf \; display-message "✅ Config reloaded"
+
+# ─────────────────────────────────────────────────────────────
+# Clipboard Integration (Cross-Platform via chezmoi templating)
+# ─────────────────────────────────────────────────────────────
+
+{{- if eq .chezmoi.os "darwin" }}
+# macOS: use pbcopy/pbpaste
+set -g buffer-command "pbcopy"
+bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "pbcopy"
+{{- else if eq .chezmoi.os "linux" }}
+# Linux: prefer wl-clipboard, fallback to xclip
+set -g buffer-command "wl-copy 2>/dev/null || xclip -selection clipboard"
+bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "wl-copy 2>/dev/null || xclip -selection clipboard"
+{{- end }}
+
+# ─────────────────────────────────────────────────────────────
+# Plugins (via TPM - Tmux Plugin Manager)
+# ─────────────────────────────────────────────────────────────
+
+# List of plugins
+set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-sensible'
+set -g @plugin 'tmux-plugins/tmux-resurrect'  # Persist sessions
+set -g @plugin 'tmux-plugins/tmux-continuum'  # Auto-save/restore
+
+# TPM initialization (must be LAST in config)
+run '~/.tmux/plugins/tpm/tpm'
+
+# Resurrect settings
+set -g @resurrect-strategy-vim 'session'
+set -g @resurrect-capture-pane-contents 'on'
+
+# Continuum: auto-save every 15min
+set -g @continuum-save-interval '15'
+set -g @continuum-restore 'on'
+
+# ─────────────────────────────────────────────────────────────
+# Optional: Disable features you don't need
+# ─────────────────────────────────────────────────────────────
+
+# Disable visual bell
+set -g visual-activity off
+set -g visual-bell off
+set -g visual-silence off
+
+# Reduce message time
+set -g message-limit 10
+set -g display-time 750

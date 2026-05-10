@@ -1,0 +1,16 @@
+# ~/.local/share/chezmoi/.chezmoiexternal.yaml
+
+# zinit plugin manager
+".local/share/zinit/zinit.git":
+  type: "git-repo"
+  url: "https://github.com/zdharma-continuum/zinit.git"
+  refreshPeriod: "168h" # Check weekly for updates
+
+# Tmux Plugin Manager
+".tmux/plugins/tpm":
+  type: "git-repo"
+  url: "https://github.com/tmux-plugins/tpm.git"
+  refreshPeriod: "168h"
+
+# Optional: fzf-tab preview dependencies (if you want eza/bat in previews)
+# Note: binaries themselves should be installed via package manager
