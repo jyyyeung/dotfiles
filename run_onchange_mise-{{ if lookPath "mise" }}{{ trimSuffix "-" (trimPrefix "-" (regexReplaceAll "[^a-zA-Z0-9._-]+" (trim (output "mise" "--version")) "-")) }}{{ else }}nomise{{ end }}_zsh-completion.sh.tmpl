@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+command -v mise >/dev/null || exit 0
+mise use -g usage 2>/dev/null || true
+site="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/site-functions"
+mkdir -p "$site"
+tmp="${site}/_mise.new.$$"
+if mise completion zsh >"$tmp" 2>/dev/null && [[ -s "$tmp" ]]; then
+  mv -f "$tmp" "${site}/_mise"
+else
+  rm -f "$tmp"
+  echo "chezmoi: mise zsh completion not written (run: mise use -g usage)" >&2
+fi

@@ -52,4 +52,9 @@ if ! command -v mise &>/dev/null; then
   curl https://mise.jdx.dev/install.sh | sh
 fi
 
+if command -v mise &>/dev/null; then
+  log "Installing mise completion helper (usage)..."
+  mise use -g usage 2>/dev/null || warn "mise use -g usage failed; tab-complete for mise needs it"
+fi
+
 log "✅ CLI tools installation complete"
