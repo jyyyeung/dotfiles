@@ -1,0 +1,6 @@
+# ~/.local/share/chezmoi/.chezmoidata.toml
+editor = "nvim"
+
+# XDG directories (for template use)
+stateDir= "{{ .chezmoi.homeDir }}/.local/state"
+cacheDir= "{{ .chezmoi.homeDir }}/.cache"

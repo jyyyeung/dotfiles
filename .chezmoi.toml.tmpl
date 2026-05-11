@@ -1,0 +1,11 @@
+# ~/.local/share/chezmoi/.chezmoi.toml.tmpl
+{{- $email := promptStringOnce . "email" "What is your email address for git?" -}}
+
+[data]
+    username = "jyyyeung"
+    email = {{ $email | quote }}
+
+    enable_node = true
+    enable_python = true
+    enable_java = true
+
