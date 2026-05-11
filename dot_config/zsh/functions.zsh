@@ -3,6 +3,9 @@
 # Create directory and enter
 mkcd() { mkdir -p "$1" && cd "$1"; }
 
+# Show git diff and pipe it to delta for nice output
+gd() { git diff "$@" | delta }
+
 # Extract archives uniformly
 extract() {
   [[ -f "$1" ]] || { echo "⚠️ File not found: $1" >&2; return 1; }
