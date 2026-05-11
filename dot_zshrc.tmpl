@@ -114,7 +114,8 @@ fi
 # SSH Agent (keychain) – only if installed
 # ============================================================================
 if (( $+commands[keychain] )); then
-  eval $(keychain --eval --quiet --agents ssh --ignore-missing ~/.ssh/id_{ecdsa,ed25519,rsa} 2>/dev/null)
+  # eval $(keychain --eval --quiet --agents ssh --ignore-missing ~/.ssh/id_{ecdsa,ed25519,rsa} 2>/dev/null)
+  eval $(keychain --eval --quiet 2>/dev/null)
 elif [[ "$DOTFILES_OS" == "linux" ]]; then
   # Fallback: gpg-agent as SSH agent (common on Linux)
   if command -v gpg-connect-agent &>/dev/null; then
