@@ -1,8 +1,8 @@
 theme = Catppuccin Mocha
 
 # Font
-font-family = "MesloLGM Nerd Font Mono"
-font-size = 13
+font-family = "JetBrainsMono Nerd Font Mono"
+font-size = 14
 
 keybind = shift+enter=text:\n
 
