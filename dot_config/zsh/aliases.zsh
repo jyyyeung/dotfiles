@@ -5,6 +5,20 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
+# Zoxide (quick navigation)
+if (( $+commands[zoxide] )); then
+  alias zz='z -'        # jump to previous directory
+  alias zi='zoxide query -i'   # interactive picker
+fi
+
+# System 
+alias mkdir='mkdir -pv'               # create parents, verbose
+alias cp='cp -iv'                      # prompt before overwrite
+alias mv='mv -iv'
+alias rm='rm -Iv'                      # prompt once for 3+ files, keep `-f` out
+alias df='df -h'
+alias du='du -h --max-depth=1 2>/dev/null || du -h -d 1'   # Linux vs macOS
+
 # Modern replacements (with fallbacks)
 if (( $+commands[eza] )); then
   alias ls='eza --icons --group-directories-first --classify'
@@ -34,24 +48,25 @@ if (( $+commands[fd] )); then
 fi
 
 # Git shortcuts
-alias g='git'
-alias gs='git status -sb'
-alias ga='git add'
-alias gc='git commit'
-alias gca='git commit -a'
-alias gco='git checkout'
-alias gb='git branch'
-alias gl='git log --oneline --graph --decorate'
-alias gp='git push'
-alias gpl='git pull'
 alias lg='lazygit'  # Visual Git TUI
+
+
+##### Dev Environments ######
+#
+# Python virtualenv (quick activation)
+alias venv='python3 -m venv .venv && echo "source .venv/bin/activate"'
+alias activate='source .venv/bin/activate 2>/dev/null || source venv/bin/activate'
+
+# Editor (with nvim if available, else vim)
+if (( $+commands[nvim] )); then
+  alias vim='nvim'
+  alias v='nvim'
+elif (( $+commands[vim] )); then
+  alias v='vim'
+fi
 
 # Infrastructure
 alias dc='docker compose'
-alias k='kubectl'
-alias kctx='kubectl config use-context'
-alias kns='kubectl config set-context --current --namespace'
-alias tf='terraform'
 
 # HTTP / API
 if (( $+commands[http] )); then
@@ -78,6 +93,19 @@ elif [[ "$DOTFILES_OS" == "linux" ]]; then
   alias pbcopy='wl-copy 2>/dev/null || xclip -selection clipboard'
   alias pbpaste='wl-paste 2>/dev/null || xclip -selection clipboard -o'
   alias open='xdg-open'
+fi
+
+# IP address
+if [[ "$DOTFILES_OS" == "darwin" ]]; then
+  alias localip='ipconfig getifaddr en0'
+else
+  alias localip='hostname -I 2>/dev/null | awk "{print \$1}" || ip a show scope global | grep inet | head -1 | awk "{print \$2}"'
+fi
+alias myip='curl -s ifconfig.me && echo'
+
+# System monitoring
+if (( $+commands[htop] )); then
+  alias top='htop'
 fi
 
 # Chezmoi workflow (CRITICAL: edit source, not target)
