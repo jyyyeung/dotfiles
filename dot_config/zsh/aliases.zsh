@@ -4,7 +4,6 @@
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
-alias -- -='cd -'
 
 # Modern replacements (with fallbacks)
 if (( $+commands[eza] )); then
@@ -30,10 +29,6 @@ elif (( $+commands[batcat] )); then
   alias bat='batcat'
 fi
 
-if (( $+commands[rg] )); then
-  alias grep='rg'
-fi
-
 if (( $+commands[fd] )); then
   alias find='fd'
 fi
@@ -46,7 +41,6 @@ alias gc='git commit'
 alias gca='git commit -a'
 alias gco='git checkout'
 alias gb='git branch'
-alias gd='git diff | delta'
 alias gl='git log --oneline --graph --decorate'
 alias gp='git push'
 alias gpl='git pull'
@@ -67,14 +61,10 @@ elif (( $+commands[httpie] )); then
 fi
 
 # Quick helpers
-alias tl='tldr'          # Practical command examples
 alias ysu='you-should-use'  # Suggest aliases
-alias woc='thefuck'       # Correct typos (if installed)
+alias wk='thefuck'       # Correct typos (if installed)
 
 # JSON/YAML processing
-if (( $+commands[jq] )); then
-  alias j='jq -r'
-fi
 if (( $+commands[yq] )); then
   alias y='yq -o=jq'
 fi
