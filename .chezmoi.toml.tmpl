@@ -1,16 +1,5 @@
-# -*-mode:conf-toml-*- vim:ft=toml
-
-# ~/.local/share/chezmoi/.chezmoi.toml.tmpl
-# =============================================================================
-# Used to customize configuration when doing a `chezmoi init`.
-#
-# This template file will trigger prompts to fill-in machine-specific
-# templateable values. The resulting file is then created at
-# `~/.config/chezmoi/chezmoi.toml`
-# See https://www.chezmoi.io/docs/how-to/
-
-{{- $email := promptStringOnce . "email" "What is your email address for git?" -}}
-{{- $name := promptStringOnce . "name" "What is your name to be used in git commits?" -}}
+{{- $email := promptStringOnce . "email" "What is your email address for git" -}}
+{{- $name := promptStringOnce . "name" "What is your name to be used in git commits" -}}
 
 [data]
     name = {{ $name | quote }}
