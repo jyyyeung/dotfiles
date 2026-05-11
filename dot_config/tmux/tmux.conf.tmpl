@@ -1,3 +1,4 @@
+#!/usr/bin/env tmux
 # ~/.tmux.conf - Managed by chezmoi. Edit source, not this file.
 # Source: {{ .chezmoi.sourceFile }}
 
@@ -5,123 +6,186 @@
 # Core Settings
 # ─────────────────────────────────────────────────────────────
 
-# Use C-a as prefix (like screen) for muscle memory
+# Prefix: C-a (like screen)
 unbind C-b
-set -g prefix C-a
-bind C-a send-prefix
+set-option -g prefix C-a
+bind-key C-a send-prefix
 
-# Enable mouse support (click to select pane/window)
+# Reload config: prefix + r
+bind r source-file ~/.tmux.conf \; display-message "✅ Config reloaded"
+
+# Mouse support
 set -g mouse on
 
 # Vi-style copy mode
 setw -g mode-keys vi
 
-# Increase history limit
-set -g history-limit 10000
+# Start windows/panes at 1 (not 0)
+set -g base-index 1
+setw -g pane-base-index 1
 
-# Set terminal to screen-256color for better color support
-set -g default-terminal "screen-256color"
+# Auto-renumber windows on close
+set -g renumber-windows on
+
+# History
+set -g history-file "~/.tmux-history"
+set -g history-limit 100000
+
+# Escape time (reduce lag)
+set-option -sg escape-time 0
+
+# Repeat time for key bindings
+set -g repeat-time 1000
+
+# Focus events (for editor integration)
+set-option -g focus-events on
+
+# Keep panes alive only on failure
+set -g remain-on-exit failed
+bind-key X respawn-pane -k
 
 # ─────────────────────────────────────────────────────────────
-# Status Bar (clean, informative)
+# Terminal & Color Support
 # ─────────────────────────────────────────────────────────────
 
-set -g status-bg default
-set -g status-fg default
-set -g status-left "#[fg=green,bold]#S#[default] "
-set -g status-right "#[fg=cyan]#(date +'%H:%M')#[default]"
-set -g status-interval 60
+# Full 24-bit color + tmux-256color compatibility
+set -g default-terminal "tmux-256color"
+set -ga terminal-overrides ",xterm-256color:Tc"
 
-# Window list style
-setw -g window-status-format "#[fg=white]#I:#W#[default]"
-setw -g window-status-current-format "#[fg=yellow,bold]#I:#W#[default]"
+# Undercurl + underline style support (for Neovim)
+set -as terminal-features ',xterm-ghostty:usstyle'
 
-# ─────────────────────────────────────────────────────────────
-# Key Bindings
-# ─────────────────────────────────────────────────────────────
+# Hyperlinks support
+set -ga terminal-features "*:hyperlinks"
 
-# Split panes with vi-style keys
-bind | split-window -h
-bind - split-window -v
+# Update environment for image previews (Yazi, etc.)
+set -ga update-environment TERM
+set -ga update-environment TERM_PROGRAM
 
-# Navigate panes with vi-style keys
-bind h select-pane -L
-bind j select-pane -D
-bind k select-pane -U
-bind l select-pane -R
-
-# Resize panes (hold prefix + key)
-bind -r H resize-pane -L 5
-bind -r J resize-pane -D 5
-bind -r K resize-pane -U 5
-bind -r L resize-pane -R 5
-
-# Quick window navigation
-bind 0 select-window -t 0
-bind 1 select-window -t 1
-bind 2 select-window -t 2
-bind 3 select-window -t 3
-bind 4 select-window -t 4
-bind 5 select-window -t 5
-bind 6 select-window -t 6
-bind 7 select-window -t 7
-bind 8 select-window -t 8
-bind 9 select-window -t 9
-
-# Copy mode: enter with prefix + [, exit with q
-bind [ copy-mode
-bind p paste-buffer
-
-# Synchronize panes (type in all at once)
-bind C-s set-window-option synchronize-panes
-
-# Reload config on the fly
-bind r source-file ~/.tmux.conf \; display-message "✅ Config reloaded"
+# Clock mode: 12-hour format
+set -g clock-mode-style 12
 
 # ─────────────────────────────────────────────────────────────
 # Clipboard Integration (Cross-Platform via chezmoi templating)
 # ─────────────────────────────────────────────────────────────
 
 {{- if eq .chezmoi.os "darwin" }}
-# macOS: use pbcopy/pbpaste
+# macOS: native pbcopy/pbpaste
+set -s set-clipboard on
 set -g buffer-command "pbcopy"
 bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "pbcopy"
 {{- else if eq .chezmoi.os "linux" }}
 # Linux: prefer wl-clipboard, fallback to xclip
+set -s set-clipboard on
 set -g buffer-command "wl-copy 2>/dev/null || xclip -selection clipboard"
 bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "wl-copy 2>/dev/null || xclip -selection clipboard"
 {{- end }}
 
 # ─────────────────────────────────────────────────────────────
-# Plugins (via TPM - Tmux Plugin Manager)
+# Smart Pane Navigation (smart-splits.nvim integration)
+# https://github.com/mrjones2014/smart-splits.nvim
 # ─────────────────────────────────────────────────────────────
 
-# List of plugins
+# Smart pane switching: aware of Neovim splits
+bind-key -n C-h if -F "#{@pane-is-vim}" 'send-keys C-h'  'select-pane -L'
+bind-key -n C-j if -F "#{@pane-is-vim}" 'send-keys C-j'  'select-pane -D'
+bind-key -n C-k if -F "#{@pane-is-vim}" 'send-keys C-k'  'select-pane -U'
+bind-key -n C-l if -F "#{@pane-is-vim}" 'send-keys C-l'  'select-pane -R'
+
+# Smart pane resizing
+bind-key -n M-h if -F "#{@pane-is-vim}" 'send-keys M-h' 'resize-pane -L 3'
+bind-key -n M-j if -F "#{@pane-is-vim}" 'send-keys M-j' 'resize-pane -D 3'
+bind-key -n M-k if -F "#{@pane-is-vim}" 'send-keys M-k' 'resize-pane -U 3'
+bind-key -n M-l if -F "#{@pane-is-vim}" 'send-keys M-l' 'resize-pane -R 3'
+
+# Last pane toggle (simplified, tmux ≥ 3.0)
+bind-key -n C-\\ if -F "#{@pane-is-vim}" 'send-keys C-\\' 'select-pane -l'
+
+# Copy-mode-vi pane navigation (for consistency)
+bind-key -T copy-mode-vi 'C-h' select-pane -L
+bind-key -T copy-mode-vi 'C-j' select-pane -D
+bind-key -T copy-mode-vi 'C-k' select-pane -U
+bind-key -T copy-mode-vi 'C-l' select-pane -R
+bind-key -T copy-mode-vi 'C-\\' select-pane -l
+
+# Visual selection in copy mode
+bind-key -T copy-mode-vi v send-keys -X begin-selection
+bind-key -T copy-mode-vi V send-keys -X select-line
+
+# ─────────────────────────────────────────────────────────────
+# Window Management
+# ─────────────────────────────────────────────────────────────
+
+# Move windows with Ctrl+Shift+Arrow (macOS may require remap in system prefs)
+bind-key -n C-S-Left swap-window -t -1
+bind-key -n C-S-Right swap-window -t +1
+
+# Attach session to current pane path: prefix + M-c
+bind-key M-c attach-session -c "#{pane_current_path}"
+
+# ─────────────────────────────────────────────────────────────
+# Plugins: Session Management
+# ─────────────────────────────────────────────────────────────
+
+# sessionx: unified fuzzy session manager
+# https://github.com/omerxx/tmux-sessionx
+set -g @sessionx-bind 'f'
+set -g @sessionx-fzf-builtin-tmux 'on'
+set -g @sessionx-zoxide-mode 'on'
+set -g @sessionx-preview-location 'right'
+set -g @sessionx-preview-ratio '55%'
+set -g @sessionx-window-mode 'on'
+
+# workmux: git worktree + tmux window manager
+# https://github.com/raine/workmux
+# prefix + g: fuzzy-find branch or type new name → create/open worktree
+unbind W
+unbind D
+bind g display-popup -E -w 80% -h 80% -d "#{pane_current_path}" \
+  "{{ .chezmoi.homeDir }}/dotfiles/tmux/workmux-popup.sh"
+
+# ─────────────────────────────────────────────────────────────
+# Plugins: TPM + Catppuccin Theme
+# ─────────────────────────────────────────────────────────────
+
+# Plugin list (TPM)
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-sensible'
-set -g @plugin 'tmux-plugins/tmux-resurrect'  # Persist sessions
-set -g @plugin 'tmux-plugins/tmux-continuum'  # Auto-save/restore
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'tmux-plugins/tmux-continuum'
+set -g @plugin 'tmux-plugins/tmux-battery'
+set -g @plugin 'tmux-plugins/tmux-cpu'
+set -g @plugin 'tmux-plugins/tmux-yank'
+set -g @plugin 'omerxx/tmux-sessionx'
+set -g @plugin 'catppuccin/tmux'  # ← Official Catppuccin theme via TPM
 
-# TPM initialization (must be LAST in config)
-run '~/.tmux/plugins/tpm/tpm'
+# Catppuccin Mocha configuration
+set -g @catppuccin_flavour 'mocha'  # Options: mocha, macchiato, frappe, latte
+set -g @catppuccin_window_status_style 'rounded'
+set -g @catppuccin_window_current_text ' #W '
+set -g @catppuccin_window_text ' #W '
 
-# Resurrect settings
+# Status bar layout (Catppuccin handles most styling)
+set -g status-left-length 100
+set -g status-right-length 100
+set -g status-left "#{E:@catppuccin_status_user}"
+set -g status-right "#{E:@catppuccin_status_directory}"
+set -ag status-right "#{E:@catppuccin_status_application}"
+set -agF status-right "#{E:@catppuccin_status_cpu}"
+set -agF status-right "#{E:@catppuccin_status_ram}"
+set -ag status-right "#{E:@catppuccin_status_session}"
+set -ag status-right "#{E:@catppuccin_status_uptime}"
+# Optional: uncomment if battery plugin is active
+# set -agF status-right "#{E:@catppuccin_status_battery}"
+
+# Resurrect + Continuum: auto-save/restore sessions
 set -g @resurrect-strategy-vim 'session'
 set -g @resurrect-capture-pane-contents 'on'
-
-# Continuum: auto-save every 15min
-set -g @continuum-save-interval '15'
+set -g @continuum-save-interval '15'  # minutes
 set -g @continuum-restore 'on'
 
 # ─────────────────────────────────────────────────────────────
-# Optional: Disable features you don't need
+# TPM Initialization (MUST BE LAST)
 # ─────────────────────────────────────────────────────────────
 
-# Disable visual bell
-set -g visual-activity off
-set -g visual-bell off
-set -g visual-silence off
-
-# Reduce message time
-set -g message-limit 10
-set -g display-time 750
+run '~/.tmux/plugins/tpm/tpm'

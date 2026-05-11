@@ -1,6 +1,6 @@
 #!/bin/bash
 # run_once_setup_tmux.sh
-# Idempotent tmux plugin setup
+# Idempotent tmux plugin setup for chezmoi
 
 set -e
 
@@ -12,10 +12,10 @@ if [[ ! -d "$TPM_DIR" ]]; then
   git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
 fi
 
-# Install plugins if tmux is running
-if command -v tmux &>/dev/null && tmux info &>/dev/null; then
+# Install plugins if tmux server is running
+if command -v tmux &>/dev/null && tmux list-sessions &>/dev/null 2>&1; then
   echo "🔧 Installing tmux plugins via TPM..."
-  "$TPM_DIR/bin/install_plugins"
+  "$TPM_DIR/bin/install_plugins" 2>/dev/null || true
 fi
 
-echo "✅ Tmux setup complete"
+echo "✅ Tmux plugin setup complete"

@@ -12,5 +12,17 @@
   url: "https://github.com/tmux-plugins/tpm.git"
   refreshPeriod: "168h"
 
+# Official Catppuccin Tmux Theme
+".tmux/plugins/catppuccin":
+  type: "git-repo"
+  url: "https://github.com/catppuccin/tmux.git"
+  refreshPeriod: "168h"
+
+# sessionx (fuzzy session manager)
+".tmux/plugins/tmux-sessionx":
+  type: "git-repo"
+  url: "https://github.com/omerxx/tmux-sessionx.git"
+  refreshPeriod: "168h"
+
 # Optional: fzf-tab preview dependencies (if you want eza/bat in previews)
 # Note: binaries themselves should be installed via package manager

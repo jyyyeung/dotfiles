@@ -18,3 +18,15 @@ dot_ssh/known_hosts
 
 # OS-specific binaries (managed externally)
 .local/bin/*
+
+# State directory - machine-specific by default
+.local/state/**
+!local/state/atuin/**  # ← Uncomment ONLY if you want Atuin history synced
+
+# Cache - never sync
+.cache/**
+
+# Local data managed externally
+.local/share/**
+!.local/share/zinit/**  # ← Keep if managing zinit via chezmoiexternal
+!.local/share/fzf/**
