@@ -1,0 +1,30 @@
+theme = Catppuccin Mocha
+
+# Font
+font-family = "MesloLGM Nerd Font Mono"
+font-size = 13
+
+keybind = shift+enter=text:\n
+
+# Shell integration
+shell-integration-features = ssh-env,ssh-terminfo
+shell-integration = detect
+
+# Quick terminal
+quick-terminal-screen = main
+quick-terminal-autohide = false
+quick-terminal-space-behavior = remain
+keybind = global:cmd+shift+space=toggle_quick_terminal
+
+# Window
+macos-titlebar-style = tabs
+window-padding-x = 8
+window-padding-y = 4
+background-opacity = 0.96
+background-blur = 10
+unfocused-split-opacity = 0.6
+window-padding-balance = true
+
+clipboard-read = allow
+macos-icon = xray
+
