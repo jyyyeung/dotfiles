@@ -139,10 +139,16 @@ set -g @sessionx-window-mode 'on'
 # workmux: git worktree + tmux window manager
 # https://github.com/raine/workmux
 # prefix + g: fuzzy-find branch or type new name → create/open worktree
-unbind W
-unbind D
-bind g display-popup -E -w 80% -h 80% -d "#{pane_current_path}" \
-  "{{ .chezmoi.homeDir }}/dotfiles/tmux/workmux-popup.sh"
+# unbind W
+#unbind D
+#bind g display-popup -E -w 80% -h 80% -d "#{pane_current_path}" \
+#  "{{ .chezmoi.homeDir }}/dotfiles/tmux/workmux-popup.sh"
+
+bind C-t run-shell "workmux sidebar"
+bind C-s display-popup -h 30 -w 100 -E "workmux dashboard"
+
+# Open directly on Worktrees tab
+bind C-w display-popup -h 30 -w 100 -E "workmux dashboard --tab worktrees"
 
 # ─────────────────────────────────────────────────────────────
 # Plugins: TPM + Catppuccin Theme
