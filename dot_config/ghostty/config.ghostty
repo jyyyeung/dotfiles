@@ -12,10 +12,10 @@ shell-integration-features = ssh-env,ssh-terminfo
 shell-integration = detect
 
 # Quick terminal
-quick-terminal-screen = main
-quick-terminal-autohide = false
-quick-terminal-space-behavior = remain
-keybind = global:cmd+shift+space=toggle_quick_terminal
+# quick-terminal-screen = main
+# quick-terminal-autohide = false
+# quick-terminal-space-behavior = remain
+# keybind = global:cmd+shift+space=toggle_quick_terminal
 
 # Window
 macos-titlebar-style = tabs
