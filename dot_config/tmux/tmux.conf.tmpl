@@ -44,6 +44,12 @@ set-option -g focus-events on
 set -g remain-on-exit failed
 bind-key X respawn-pane -k
 
+# Split panes using | and -
+unbind '"'
+unbind %
+bind | split-window -h -c "#{pane_current_path}"
+bind - split-window -v -c "#{pane_current_path}"
+
 # ─────────────────────────────────────────────────────────────
 # Terminal & Color Support
 # ─────────────────────────────────────────────────────────────
