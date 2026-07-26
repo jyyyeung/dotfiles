@@ -8,45 +8,105 @@ set -e
 log() { echo "🔧 $*"; }
 warn() { echo "⚠️  $*" >&2; }
 
+ensure_brew_path() {
+  if [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  elif [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -x /usr/local/bin/brew ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+}
+
+pkg_installed() {
+  local pkg="$1"
+  case "$pkg" in
+    git-delta|delta) command -v delta &>/dev/null ;;
+    fd|fd-find) command -v fd &>/dev/null || command -v fdfind &>/dev/null ;;
+    ripgrep) command -v rg &>/dev/null ;;
+    bat) command -v bat &>/dev/null || command -v batcat &>/dev/null ;;
+    *) command -v "$pkg" &>/dev/null ;;
+  esac
+}
+
+brew_writable() {
+  ensure_brew_path
+  command -v brew &>/dev/null || return 1
+  local prefix
+  prefix="$(brew --prefix 2>/dev/null)" || return 1
+  [[ -w "$prefix" ]]
+}
+
+install_via_brew() {
+  local pkg
+  ensure_brew_path
+  for pkg in "$@"; do
+    pkg_installed "$pkg" && continue
+    brew list "$pkg" &>/dev/null || brew install "$pkg"
+  done
+}
+
 # macOS: Homebrew
 if [[ "$(uname -s)" == "Darwin" ]] && ! command -v brew &>/dev/null; then
   log "Installing Homebrew..."
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  ensure_brew_path
   echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-  eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
-# Package lists
 MACOS_PACKAGES=(
   zoxide starship eza bat ripgrep fd fzf jq yq httpie delta lazygit
   mise keychain zsh-syntax-highlighting zsh-autosuggestions
 )
 
-LINUX_PACKAGES=(
+BREW_PACKAGES=(
   zoxide starship eza bat ripgrep fd fzf jq yq httpie git-delta lazygit
   mise keychain
 )
 
+# Packages generally available via apt on Debian/Ubuntu
+APT_PACKAGES=(
+  zoxide bat ripgrep fd-find fzf jq httpie keychain
+)
+
 if [[ "$(uname -s)" == "Darwin" ]]; then
   log "Installing macOS packages via Homebrew..."
-  for pkg in "${MACOS_PACKAGES[@]}"; do
-    brew list "$pkg" &>/dev/null || brew install "$pkg"
-  done
+  install_via_brew "${MACOS_PACKAGES[@]}"
 elif [[ "$(uname -s)" == "Linux" ]]; then
-  log "Installing Linux packages (apt)..."
-  sudo apt update -qq
-  for pkg in "${LINUX_PACKAGES[@]}"; do
-    command -v "$pkg" &>/dev/null || sudo apt install -y "$pkg"
-  done
-  # fzf often needs manual install on Linux
-  if ! command -v fzf &>/dev/null; then
+  if brew_writable; then
+    log "Installing Linux packages via Homebrew..."
+    install_via_brew "${BREW_PACKAGES[@]}"
+  else
+    log "Installing available Linux packages via apt..."
+    sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
+    for pkg in "${APT_PACKAGES[@]}"; do
+      case "$pkg" in
+        fd-find) pkg_installed fd || sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "$pkg" ;;
+        bat) pkg_installed bat || sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "$pkg" ;;
+        *) pkg_installed "$pkg" || sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "$pkg" ;;
+      esac
+    done
+  fi
+
+  if ! pkg_installed starship; then
+    log "Installing starship via upstream installer..."
+    curl -sS https://starship.rs/install.sh | sh -s -- -y
+  fi
+
+  if ! pkg_installed fzf; then
     log "Installing fzf via git..."
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
     ~/.fzf/install --all --no-bash --no-fish
   fi
+
+  for missing in eza lazygit delta yq; do
+    if ! pkg_installed "$missing"; then
+      warn "$missing not installed (not in default apt repos; use Homebrew as the target user or install manually)"
+    fi
+  done
 fi
 
-# mise runtime manager (polyglot)
+ensure_brew_path
 if ! command -v mise &>/dev/null; then
   log "Installing mise..."
   curl https://mise.jdx.dev/install.sh | sh
