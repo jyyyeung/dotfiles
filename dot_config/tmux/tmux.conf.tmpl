@@ -32,6 +32,9 @@ set -g renumber-windows on
 set -g history-file "~/.tmux-history"
 set -g history-limit 100000
 
+# allows applications to send escape sequences to terminal emulator
+set -g allow-passthrough on
+
 # Escape time (reduce lag)
 set-option -sg escape-time 0
 
