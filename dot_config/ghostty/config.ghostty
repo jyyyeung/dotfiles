@@ -11,6 +11,10 @@ macos-option-as-alt = true
 shell-integration-features = ssh-env,ssh-terminfo
 shell-integration = detect
 
+# Allow OSC 52 clipboard escape sequences from SSH/tmux sessions
+clipboard-read = allow
+clipboard-write = allow
+
 # Quick terminal
 # quick-terminal-screen = main
 # quick-terminal-autohide = false
