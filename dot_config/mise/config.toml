@@ -1,0 +1,11 @@
+[tools]
+gitleaks = "latest"
+neovim = "latest"
+pnpm = "latest"
+usage = "latest"
+
+# gitleaks is here for the chezmoi git hooks (pre-commit + pre-push secret
+# scan). Installing it through mise keeps macOS and Linux on the same path;
+# the hooks fall back to internal patterns if it is missing, so a failed
+# install degrades coverage instead of breaking commits.
+# Full coverage: mise install gitleaks

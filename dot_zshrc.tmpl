@@ -13,9 +13,13 @@ export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 # ============================================================================
 # Locale Fallback (safe default)
 # ============================================================================
-if ! locale -a 2>/dev/null | grep -qi 'en_US.utf8'; then
-  export LC_ALL=C.UTF-8
+# macOS reports en_US.UTF-8, most Linux images report en_US.utf8 — match BOTH, and
+# never clobber a locale the caller already chose. (The old pattern only matched
+# `en_US.utf8`, so on macOS the fallback fired on every single shell and forced
+# C.UTF-8, which is not a macOS locale -> setlocale() fell back to plain C.)
+if [[ -z "${LC_ALL:-}${LANG:-}" ]] && ! locale -a 2>/dev/null | grep -qiE '^en_US\.utf-?8$'; then
   export LANG=C.UTF-8
+  export LC_ALL=C.UTF-8
   export LANGUAGE=C.UTF-8
 fi
 
@@ -163,4 +167,21 @@ missing=()
 (( ! $+commands[rg] )) && missing+=("rg")
 (( ! $+commands[fzf] )) && missing+=("fzf")
 (( ! $+commands[delta] )) && missing+=("delta")
-(( ${#missing} )) && echo "⚠️ Optional tools missing: ${(j:, :)missing} → run: chezmoi apply && ~/.local/share/chezmoi/run_once_install_cli_tools.sh"
+(( ${#missing} )) && echo "⚠️ Optional tools missing: ${(j:, :)missing} → run: chezmoi apply  (to force the install script to re-run: chezmoi state delete-bucket --bucket=scriptState && chezmoi apply)"
+
+# ============================================================================
+# Machine-local overrides (deliberately NOT managed by chezmoi, never committed)
+# ============================================================================
+[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
+
+# ============================================================================
+# oh-my-opencode-slim background subagents
+# ============================================================================
+export OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS=true
+
+# ============================================================================
+# iTerm2 shell integration (macOS only — the script never exists on Linux)
+# ============================================================================
+if [[ "$OSTYPE" == darwin* && -f "${HOME}/.iterm2_shell_integration.zsh" ]]; then
+  source "${HOME}/.iterm2_shell_integration.zsh"
+fi

@@ -11,4 +11,26 @@
 
 [git]
     autoCommit = true
+    # autoPush stays ON so the two machines never silently diverge. The safety
+    # net is the pre-commit secret guard installed by
+    # run_onchange_install-git-hooks.sh.tmpl: chezmoi's auto-commit does NOT use
+    # `--no-verify`, so a secret cannot reach the public remote.
     autoPush = true
+
+# Fast-forward from origin before every apply, so a machine never has to
+# reconcile by surprise. Soft-fails with a loud warning when offline rather than
+# blocking the apply, and uses --ff-only so it can never leave a half-done
+# rebase behind.
+#
+# Deliberately NOT a hardcoded path: chezmoi.sourceDir is filled in at
+# `chezmoi init` time, so each machine (macOS or Linux, any $HOME) gets its own
+# correct value. --no-rebase is required because pull.rebase = true in the
+# dotfiles gitconfig would otherwise turn this into a rebase; --ff-only alone
+# does NOT override it.
+[hooks.apply.pre]
+    command = "sh"
+    args = [
+        "-c",
+        'git -C {{ .chezmoi.sourceDir | quote }} pull --ff-only --no-rebase --quiet 2>/dev/null || echo "chezmoi: could not fast-forward from origin (offline, or diverged — run chezmoi cd then git pull --rebase) " >&2',
+    ]
+

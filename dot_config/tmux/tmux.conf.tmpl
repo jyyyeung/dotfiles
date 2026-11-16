@@ -11,8 +11,9 @@ unbind C-b
 set-option -g prefix C-a
 bind-key C-a send-prefix
 
-# Reload config: prefix + r
-bind r source-file ~/.tmux.conf \; display-message "✅ Config reloaded"
+# Reload config: prefix + r  (the chezmoi-managed file, NOT the legacy
+# ~/.tmux.conf symlink that Mackup/OneDrive still owns)
+bind r source-file ~/.config/tmux/tmux.conf \; display-message "✅ Config reloaded"
 
 # Mouse support
 set -g mouse on
@@ -77,13 +78,13 @@ set -g clock-mode-style 12
 
 {{- if eq .chezmoi.os "darwin" }}
 # macOS: native pbcopy/pbpaste
+# NOTE: `buffer-command` was removed in tmux 3.0 — the copy-pipe binding below is
+# what actually sets the system clipboard.
 set -s set-clipboard on
-set -g buffer-command "pbcopy"
 bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "pbcopy"
 {{- else if eq .chezmoi.os "linux" }}
 # Linux: prefer wl-clipboard, fallback to xclip
 set -s set-clipboard on
-set -g buffer-command "wl-copy 2>/dev/null || xclip -selection clipboard"
 bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "wl-copy 2>/dev/null || xclip -selection clipboard"
 {{- end }}
 
@@ -105,14 +106,16 @@ bind-key -n M-k if -F "#{@pane-is-vim}" 'send-keys M-k' 'resize-pane -U 3'
 bind-key -n M-l if -F "#{@pane-is-vim}" 'send-keys M-l' 'resize-pane -R 3'
 
 # Last pane toggle (simplified, tmux ≥ 3.0)
-bind-key -n C-\\ if -F "#{@pane-is-vim}" 'send-keys C-\\' 'select-pane -l'
+# `C-\` must be single-quoted: unquoted, tmux reads `\ ` as an escaped space and
+# reports "unknown key: C- if". `send-keys -H 1c` sends raw byte 0x1c (C-\).
+bind-key -n 'C-\' if -F "#{@pane-is-vim}" 'send-keys -H 1c' 'select-pane -l'
 
 # Copy-mode-vi pane navigation (for consistency)
 bind-key -T copy-mode-vi 'C-h' select-pane -L
 bind-key -T copy-mode-vi 'C-j' select-pane -D
 bind-key -T copy-mode-vi 'C-k' select-pane -U
 bind-key -T copy-mode-vi 'C-l' select-pane -R
-bind-key -T copy-mode-vi 'C-\\' select-pane -l
+bind-key -T copy-mode-vi 'C-\' select-pane -l
 
 # Visual selection in copy mode
 bind-key -T copy-mode-vi v send-keys -X begin-selection
@@ -171,8 +174,44 @@ set -g @plugin 'tmux-plugins/tmux-yank'
 set -g @plugin 'omerxx/tmux-sessionx'
 set -g @plugin 'catppuccin/tmux'  # ← Official Catppuccin theme via TPM
 
-# Catppuccin Mocha configuration
-set -g @catppuccin_flavour 'mocha'  # Options: mocha, macchiato, frappe, latte
+# ─────────────────────────────────────────────────────────────────────────────
+# NORD PALETTE OVERRIDE — all-Nord: ghostty + tmux + starship + nvim
+#
+# catppuccin/tmux defines every colour with `set -ogq @thm_*`, where `-o` means
+# "only if unset". Pre-setting them here (this runs before TPM loads the plugin
+# at the bottom of this file) therefore retints the whole status bar without
+# giving up any of the module machinery below.
+# ─────────────────────────────────────────────────────────────────────────────
+set -g @thm_bg "#2e3440"        # nord0
+set -g @thm_fg "#eceff4"        # nord6
+set -g @thm_rosewater "#d8dee9" # nord4
+set -g @thm_flamingo "#b48ead"  # nord15
+set -g @thm_pink "#b48ead"      # nord15
+set -g @thm_mauve "#b48ead"     # nord15
+set -g @thm_red "#bf616a"       # nord11
+set -g @thm_maroon "#bf616a"    # nord11
+set -g @thm_peach "#d08770"     # nord12
+set -g @thm_yellow "#ebcb8b"    # nord13
+set -g @thm_green "#a3be8c"     # nord14
+set -g @thm_teal "#8fbcbb"      # nord7
+set -g @thm_sky "#88c0d0"       # nord8
+set -g @thm_sapphire "#81a1c1"  # nord9
+set -g @thm_blue "#5e81ac"      # nord10
+set -g @thm_lavender "#81a1c1"  # nord9
+set -g @thm_subtext_1 "#e5e9f0" # nord5
+set -g @thm_subtext_0 "#d8dee9" # nord4
+set -g @thm_overlay_2 "#4c566a" # nord3
+set -g @thm_overlay_1 "#434c5e" # nord2
+set -g @thm_overlay_0 "#3b4252" # nord1
+set -g @thm_surface_2 "#4c566a" # nord3
+set -g @thm_surface_1 "#434c5e" # nord2
+set -g @thm_surface_0 "#3b4252" # nord1
+set -g @thm_mantle "#272c36"
+set -g @thm_crust "#232831"
+
+# Flavor only picks which theme file the plugin sources; with every @thm_* set
+# above, its colours are inert. Kept so `prefix + I` upgrades stay predictable.
+set -g @catppuccin_flavor 'mocha'  # Options: mocha, macchiato, frappe, latte
 set -g @catppuccin_window_status_style 'rounded'
 set -g @catppuccin_window_current_text ' #W '
 set -g @catppuccin_window_text ' #W '

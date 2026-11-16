@@ -1,12 +1,22 @@
+# ============================================================================
 # Secrets & credentials
-dot_config/zsh/secrets.zsh
-dot_config/zsh/*secret*
-dot_*env*
-dot_netrc
-dot_github/credentials*
-dot_aws/credentials
-dot_ssh/id_*
-dot_ssh/known_hosts
+# Patterns are doublestar-matched against the TARGET path (what lands in $HOME),
+# NOT the source name: a source file `dot_aws/credentials` is the target
+# `.aws/credentials`. Ignoring only stops chezmoi from picking a file up; it
+# never un-manages one that is already tracked (use `chezmoi forget` + `git rm`).
+# ============================================================================
+.config/zsh/secrets.zsh
+.config/zsh/*secret*
+.netrc
+.github/credentials*
+.aws/credentials
+.aws/config
+.ssh/id_*
+.ssh/known_hosts
+.env
+.env.*
+**/.env
+**/.env.*
 *.key
 *.pem
 *.p12

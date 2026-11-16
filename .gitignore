@@ -1,0 +1,37 @@
+# Second net: chezmoi only pushes what it tracks, but these must never be
+# committed if they ever land in the source tree by accident.
+
+# Credentials
+.netrc
+.git-credentials
+*credentials*
+*_history
+.history
+
+# Environment files
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Keys & certs
+*.key
+*.pem
+*.p12
+*.p8
+*.p12.b64
+id_rsa
+id_ed25519
+id_ecdsa
+
+# Tool state that must stay machine-local
+.aws/credentials
+.kube/*.kubeconfig
+*.kubeconfig
+.tmux/plugins/**
+.local/state/**
+.cache/**
+
+# macOS / editor noise
+.DS_Store
+*.swp

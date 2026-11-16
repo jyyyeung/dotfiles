@@ -26,6 +26,15 @@
 [diff]
   tool = nvim
   colorMoved = default
+  algorithm = histogram
+
+# Without these, `git difftool` / `git mergetool` fall back to running the tool
+# name itself and dump the raw files with no diff view at all.
+[difftool "nvim"]
+  cmd = nvim -d "$LOCAL" "$REMOTE"
+[mergetool "nvim"]
+  cmd = nvim -d "$LOCAL" "$MERGED"
+  trustExitCode = true
 
 [delta]
   features = side-by-side,line-numbers,decorations
@@ -67,6 +76,21 @@
   # Lazygit
   lgui = "!lazygit"
 
-# Credential helper (use Bitwarden via shell command if needed)
-# [credential]
-#   helper = "!f() { bw get password github-token; }; f"
+# Credential helper — resolved per OS so this stays portable between macOS and
+# Linux. NOTE: `helper = store` was deliberately removed; it wrote the token in
+# plaintext to ~/.git-credentials.
+[credential]
+{{- if eq .chezmoi.os "darwin" }}
+  helper = osxkeychain
+{{- else if eq .chezmoi.os "linux" }}
+  # `cache` is built into git and needs no extra packages; swap for
+  # `libsecret` once gnome-keyring / libsecret-1-0 is installed.
+  helper = cache --timeout=86400
+{{- else }}
+  helper = cache --timeout=86400
+{{- end }}
+
+# Kept so git stops re-writing this block after every apply. Narrow it to the
+# paths you actually need if you ever share this machine.
+[safe]
+  directory = *

@@ -35,7 +35,7 @@ $memory_usage\
 [ ](fg:prev_bg)\
 $line_break$character"""
 
-palette = 'catppuccin_mocha'
+palette = 'nord'
 
 [palettes.catppuccin_latte]
 color_rosewater = "#dc8a78"
@@ -294,3 +294,37 @@ vimcmd_symbol = '[](bold fg:color_green)'
 vimcmd_replace_one_symbol = '[](bold fg:color_purple)'
 vimcmd_replace_symbol = '[](bold fg:color_purple)'
 vimcmd_visual_symbol = '[](bold fg:color_yellow)'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Nord palette (all-Nord: ghostty + tmux + starship + nvim)
+# Nord only has 16 colours, so several catppuccin slot names intentionally share
+# a value (mauve/flamingo/pink => nord15). The slot names are kept as-is so every
+# module style above keeps resolving.
+# ─────────────────────────────────────────────────────────────────────────────
+[palettes.nord]
+color_rosewater = "#d8dee9"  # nord4
+color_flamingo = "#b48ead"   # nord15
+color_pink = "#b48ead"       # nord15
+color_mauve = "#b48ead"      # nord15
+color_red = "#bf616a"        # nord11
+color_maroon = "#bf616a"     # nord11
+color_peach = "#d08770"      # nord12
+color_yellow = "#ebcb8b"     # nord13
+color_green = "#a3be8c"      # nord14
+color_teal = "#8fbcbb"       # nord7
+color_sky = "#88c0d0"        # nord8
+color_sapphire = "#81a1c1"   # nord9
+color_blue = "#5e81ac"       # nord10
+color_lavender = "#81a1c1"   # nord9
+color_text = "#eceff4"       # nord6
+color_subtext1 = "#e5e9f0"   # nord5
+color_subtext0 = "#d8dee9"   # nord4
+color_overlay2 = "#4c566a"   # nord3
+color_overlay1 = "#434c5e"   # nord2
+color_overlay0 = "#3b4252"   # nord1
+color_surface2 = "#4c566a"   # nord3
+color_surface1 = "#434c5e"   # nord2
+color_surface0 = "#3b4252"   # nord1
+color_base = "#2e3440"       # nord0
+color_mantle = "#272c36"
+color_crust = "#232831"

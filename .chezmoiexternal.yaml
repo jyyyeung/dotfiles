@@ -1,4 +1,13 @@
 # ~/.local/share/chezmoi/.chezmoiexternal.yaml
+#
+# Every tmux plugin is installed declaratively here, so a fresh machine needs
+# only `chezmoi apply` — no "start tmux first, then press prefix+I" dance.
+#
+# IMPORTANT: TPM resolves a plugin to ~/.tmux/plugins/<last path segment of the
+# URL>. That is why the Catppuccin theme MUST live in `.tmux/plugins/tmux` (the
+# repo is catppuccin/tmux) and not in `.tmux/plugins/catppuccin` — with the old
+# path, `catppuccin.tmux` was never sourced and a second copy got cloned under
+# ~/.tmux/plugins/tmux on the first `prefix + I`.
 
 # zinit plugin manager
 ".local/share/zinit/zinit.git":
@@ -6,14 +15,14 @@
   url: "https://github.com/zdharma-continuum/zinit.git"
   refreshPeriod: "168h" # Check weekly for updates
 
-# Tmux Plugin Manager
+# Tmux Plugin Manager (must come first)
 ".tmux/plugins/tpm":
   type: "git-repo"
   url: "https://github.com/tmux-plugins/tpm.git"
   refreshPeriod: "168h"
 
-# Official Catppuccin Tmux Theme
-".tmux/plugins/catppuccin":
+# Official Catppuccin theme — directory name must match the repo basename (`tmux`)
+".tmux/plugins/tmux":
   type: "git-repo"
   url: "https://github.com/catppuccin/tmux.git"
   refreshPeriod: "168h"
@@ -24,5 +33,33 @@
   url: "https://github.com/omerxx/tmux-sessionx.git"
   refreshPeriod: "168h"
 
-# Optional: fzf-tab preview dependencies (if you want eza/bat in previews)
-# Note: binaries themselves should be installed via package manager
+# Tmux plugins used by tmux.conf.tmpl
+".tmux/plugins/tmux-sensible":
+  type: "git-repo"
+  url: "https://github.com/tmux-plugins/tmux-sensible.git"
+  refreshPeriod: "168h"
+
+".tmux/plugins/tmux-resurrect":
+  type: "git-repo"
+  url: "https://github.com/tmux-plugins/tmux-resurrect.git"
+  refreshPeriod: "168h"
+
+".tmux/plugins/tmux-continuum":
+  type: "git-repo"
+  url: "https://github.com/tmux-plugins/tmux-continuum.git"
+  refreshPeriod: "168h"
+
+".tmux/plugins/tmux-battery":
+  type: "git-repo"
+  url: "https://github.com/tmux-plugins/tmux-battery.git"
+  refreshPeriod: "168h"
+
+".tmux/plugins/tmux-cpu":
+  type: "git-repo"
+  url: "https://github.com/tmux-plugins/tmux-cpu.git"
+  refreshPeriod: "168h"
+
+".tmux/plugins/tmux-yank":
+  type: "git-repo"
+  url: "https://github.com/tmux-plugins/tmux-yank.git"
+  refreshPeriod: "168h"

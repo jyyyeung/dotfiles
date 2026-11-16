@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# mise version: {{ if lookPath "mise" }}{{ output "mise" "--version" | trim }}{{ else }}absent{{ end }}
+# ^ THIS line is what makes the script re-run: chezmoi keys `run_onchange_` off the
+#   rendered CONTENT hash. The old filename tried to encode the version in the
+#   script name, but chezmoi never templates source filenames.
 set -euo pipefail
 command -v mise >/dev/null || exit 0
 mise use -g usage 2>/dev/null || true

@@ -26,7 +26,7 @@ if (( $+commands[eza] )); then
   alias ll='eza -lbGF --icons'
   alias la='eza -abGF --icons'
   alias lt='eza --tree --icons'
-  alias lg='eza -lbGF --icons --git'
+  alias lgs='eza -lbGF --icons --git'  # git-aware long listing (`lg` is lazygit, see below)
 else
   alias ls='ls -G'  # macOS color
   alias l='ls -lA'
@@ -48,7 +48,7 @@ if (( $+commands[fd] )); then
 fi
 
 # Git shortcuts
-alias lg='lazygit'  # Visual Git TUI
+alias lg='lazygit'  # Visual Git TUI (defined here first, so it wins over any earlier `lg`)
 
 
 ##### Dev Environments ######
@@ -109,5 +109,7 @@ if (( $+commands[htop] )); then
 fi
 
 # Chezmoi workflow (CRITICAL: edit source, not target)
-alias zshconfig='chezmoi edit dot_zshrc'
+# `chezmoi edit` takes a TARGET path — `chezmoi edit dot_zshrc` fails with
+# "dot_zshrc: not managed".
+alias zshconfig='chezmoi edit ~/.zshrc'
 alias dotfiles='chezmoi cd'

@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+# run_onchange_install-git-hooks.sh.tmpl
+#
+# Installs TWO secret-scanning hooks into the chezmoi source repo:
+#
+#   pre-commit  scans staged changes        → blocks a bad commit
+#   pre-push    scans the commits published → blocks a bad push
+#
+# Why both: `[git] autoPush = true` is only safe if a secret cannot reach the
+# public remote. chezmoi's automatic commit does NOT pass `--no-verify`
+# (verified: the flag does not appear in the binary), so pre-commit blocks
+# auto-commits too. pre-commit alone is bypassable (`git commit --no-verify`,
+# `git commit -an`, commits made by other tools, secrets that predate the
+# hook), so pre-push re-checks everything about to leave the machine.
+#
+# SCANNER: layered on purpose.
+#   1. gitleaks (MIT, zero deps, no telemetry, no network) when it is on PATH
+#      or in the mise shims dir — 150+ rules plus entropy detection.
+#   2. Otherwise a small built-in pattern list, so the guard still works on a
+#      machine where the tool is missing or mise has not installed it yet.
+# A hook that hard-depends on a binary fails badly: either it blocks every
+# commit on a machine without it, or it silently passes. The builtin floor
+# makes that impossible. Install/refresh the real scanner with:
+#   mise use -g gitleaks
+#
+# Deliberately NOT an apply-time scan: `chezmoi apply` only writes to the local
+# disk, so scanning there would be pure cost with no security gain. The
+# commit/push boundary is where content becomes public.
+#
+# Re-runs automatically whenever this file's content changes (`run_onchange_`
+# is keyed on the rendered content hash).
+set -euo pipefail
+
+SRC="{{ .chezmoi.sourceDir }}"
+HOOKDIR="$SRC/.git/hooks"
+
+mkdir -p "$HOOKDIR"
+
+# One body, installed under both names; it dispatches on $0 so the pattern list
+# can never drift between the two hooks.
+HOOK_BODY="$(cat <<'HOOK_EOF'
+#!/usr/bin/env bash
+# Installed by chezmoi (run_onchange_install-git-hooks.sh.tmpl). Do not edit
+# here: edit the template in the source repo and re-run `chezmoi apply`.
+#
+# Blocks commits/pushes whose changes look like credentials. Uses gitleaks when
+# available, else a built-in pattern list. Escape hatches: `git commit
+# --no-verify` / `git push --no-verify`. Note that `chezmoi apply` has NO escape
+# hatch (intentional — that path auto-pushes to a public remote).
+
+set -uo pipefail
+mode="$(basename "$0")"
+fail=0
+
+report() {
+  printf '\n\033[31m✖ %s blocked\033[0m: %s\n  %s\n  → remove it, use a secret store, or (if truly fine) %s\n' \
+    "$action" "$1" "$2" "$escape" >&2
+  fail=1
+}
+
+# ── scanner discovery ────────────────────────────────────────────────────────
+GL=""
+for cand in gitleaks \
+            "${MISE_DATA_DIR:-$HOME/.local/share}/mise/shims/gitleaks" \
+            "$HOME/.local/share/mise/shims/gitleaks"; do
+  if command -v "$cand" >/dev/null 2>&1; then GL="$cand"; break; fi
+done
+
+# ── builtin floor ────────────────────────────────────────────────────────────
+scan_lines() {
+  local label="$1" re="$2" hit
+  [ -n "$lines" ] || return 0
+  hit="$(printf '%s\n' "$lines" | grep -nE "$re" | head -3)"
+  [ -n "$hit" ] && report "$label" "$hit"
+  return 0
+}
+
+scan_files() {
+  local hit
+  [ -n "$names" ] || return 0
+  hit="$(printf '%s\n' "$names" | grep -E '(^|/)(\.netrc|\.git-credentials|\.env|\.env\..*|id_rsa|id_ed25519|id_ecdsa)$|\.(pem|key|p12|p8)$' || true)"
+  [ -n "$hit" ] && report "secret-shaped file" "$hit"
+  return 0
+}
+
+run_builtin() {
+  scan_lines "AWS access key"        'AKIA[0-9A-Z]{16}'
+  scan_lines "AWS secret key"        'aws_secret_access_key[[:space:]]*[:=][[:space:]]*[^[:space:]]{20,}'
+  scan_lines "GitHub token"          '(gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{20,})'
+  scan_lines "Slack token"           'xox[abprs]-[A-Za-z0-9-]{10,}'
+  scan_lines "sk- style API key"     'sk-[A-Za-z0-9_-]{20,}'
+  scan_lines "private key block"     'BEGIN [A-Z ]*PRIVATE KEY'
+  scan_lines "JWT"                   'eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.'
+  scan_lines "credential assignment" '(passwd|password|secret|token|api[_-]?key|access[_-]?key|private[_-]?key)[[:space:]]*[:=][[:space:]]*[^[:space:]]{12,}'
+  scan_files
+}
+
+# ── dispatch ─────────────────────────────────────────────────────────────────
+case "$mode" in
+  pre-commit)
+    action="commit"; escape="git commit --no-verify"
+    lines="$(git diff --cached --unified=0 --no-color -- . | grep -E '^\+' | grep -vE '^\+\+\+')"
+    names="$(git diff --cached --name-only -- .)"
+    if [ -n "$GL" ]; then
+      "$GL" git --pre-commit --staged --redact --no-banner --no-color >&2 || fail=1
+      # gitleaks is content-only; keep the filename rule either way
+      scan_files
+    else
+      run_builtin
+    fi
+    ;;
+
+  pre-push)
+    action="push"; escape="git push --no-verify"
+    empty="$(git hash-object -t tree /dev/null)"
+    ranges=""
+    # stdin: <local ref> <local sha> <remote ref> <remote sha>
+    while read -r _lref lsha _rref rsha; do
+      [ -n "${lsha:-}" ] || continue
+      # all-zero remote sha = new branch, so scan everything it publishes
+      case "$rsha" in
+        *[!0]*) ranges="$ranges $rsha..$lsha" ;;
+        *)      ranges="$ranges $lsha" ;;
+      esac
+    done
+    if [ -n "$ranges" ]; then
+      if [ -n "$GL" ]; then
+        for r in $ranges; do
+          "$GL" git --log-opts="$r" --redact --no-banner --no-color >&2 || fail=1
+        done
+        names="$(printf '%s\n' $ranges | while read -r r; do
+                   git diff --name-only "$r" -- . 2>/dev/null
+                 done | sort -u)"
+        scan_files
+      else
+        lines="$(printf '%s\n' $ranges | while read -r r; do
+                   git diff --unified=0 --no-color "$r" -- .
+                 done | grep -E '^\+' | grep -vE '^\+\+\+')"
+        names="$(printf '%s\n' $ranges | while read -r r; do
+                   git diff --name-only "$r" -- .
+                 done | sort -u)"
+        run_builtin
+      fi
+    fi
+    ;;
+
+  *)
+    echo "secret-guard: unknown hook name '$mode'" >&2
+    exit 0
+    ;;
+esac
+
+if [ "$fail" -ne 0 ]; then
+  printf '\n\033[31m✖ %s blocked by the chezmoi secret guard.\033[0m\n' "$action" >&2
+  printf '  This repo is PUBLIC and chezmoi auto-pushes. If a secret is already\n' >&2
+  printf '  committed, removing it in a new commit does NOT unpublish it.\n' >&2
+  printf '  Scanner: %s\n' "${GL:-builtin patterns (install gitleaks via: mise use -g gitleaks)}" >&2
+fi
+exit "$fail"
+HOOK_EOF
+)"
+
+for name in pre-commit pre-push; do
+  printf '%s\n' "$HOOK_BODY" >"$HOOKDIR/$name"
+  chmod +x "$HOOKDIR/$name"
+done
+
+if command -v gitleaks >/dev/null 2>&1 || [ -x "$HOME/.local/share/mise/shims/gitleaks" ]; then
+  echo "✅ secret guards installed: $HOOKDIR/{pre-commit,pre-push} (gitleaks backend)"
+else
+  echo "✅ secret guards installed: $HOOKDIR/{pre-commit,pre-push} (builtin patterns — run 'mise use -g gitleaks' for full coverage)"
+fi
