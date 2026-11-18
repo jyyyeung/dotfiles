@@ -1,0 +1,14 @@
+# Files chezmoi should DELETE from $HOME on the next apply.
+# Needed because removing a file from the source tree only un-manages it —
+# chezmoi never deletes destination files it no longer knows about.
+#
+# 2024 audit: these were AstroNvim template stubs that only said
+# "if true then return {} end", i.e. functionally identical to not existing.
+# `user.lua` is kept on purpose: it is AstroNvim's documented override hook.
+.config/nvim/lua/plugins/astrocore.lua
+.config/nvim/lua/plugins/astrolsp.lua
+.config/nvim/lua/plugins/mason.lua
+.config/nvim/lua/plugins/none-ls.lua
+.config/nvim/lua/plugins/treesitter.lua
+# NOTE: a target listed here is skipped if .chezmoiignore also matches it
+# (apply never touches ignored paths) — those have to be removed by hand.

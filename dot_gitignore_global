@@ -1,0 +1,47 @@
+# ~/.gitignore_global — ignored in EVERY git repo on this machine.
+# Referenced by `core.excludesFile` in the managed ~/.gitconfig.
+
+# OS noise
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# Editor / tool scratch
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.iml
+
+# Secrets (belt and braces: the chezmoi repo also has its own .gitignore +
+# pre-commit/pre-push scanners; this stops accidents in OTHER repos)
+.env
+.env.*
+*.pem
+*.key
+*.p12
+.netrc
+.git-credentials
+id_rsa
+id_ed25519
+id_ecdsa
+
+# Language caches
+__pycache__/
+*.py[cod]
+.venv/
+node_modules/
+.cache/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Build output
+dist/
+build/
+target/

@@ -3,6 +3,11 @@ neovim = "latest"
 pnpm = "latest"
 usage = "latest"
 
+# uv/uvx: the shims exist on this machine but no global version was set, so
+# every shell start printed "mise ERROR No version is set for shim: uv".
+# Pinning it here gives the shim a version to resolve (and keeps Linux in sync).
+uv = "latest"
+
 # gitleaks backs the chezmoi git hooks (pre-commit + pre-push secret scan).
 # Installing it through mise keeps macOS and Linux on the same path; the hooks
 # fall back to internal patterns if it is missing, so a failed install degrades

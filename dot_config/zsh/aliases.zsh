@@ -13,9 +13,9 @@ fi
 
 # System 
 alias mkdir='mkdir -pv'               # create parents, verbose
-alias cp='cp -iv'                      # prompt before overwrite
-alias mv='mv -iv'
-alias rm='rm -Iv'                      # prompt once for 3+ files, keep `-f` out
+alias cp='cp -i'                      # prompt before overwrite (no -v: noisy on bulk copies)
+alias mv='mv -i'
+alias rm='rm -I'                      # one prompt for 3+ files or -r; never silently -f. (-v dropped: printed a line per file inside loops)
 alias df='df -h'
 alias du='du -h --max-depth=1 2>/dev/null || du -h -d 1'   # Linux vs macOS
 

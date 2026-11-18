@@ -17,6 +17,13 @@
     # `--no-verify`, so a secret cannot reach the public remote.
     autoPush = true
 
+# `chezmoi diff` uses delta (side-by-side, syntax highlighted) instead of bare
+# `diff -u`; delta is a bootstrap dependency on both platforms. On a machine
+# without delta, drop this block or `chezmoi diff` will fail.
+[diff]
+    command = "delta"
+    args = ["--paging=never"]
+
 # Fast-forward from origin before every apply, so a machine never has to
 # reconcile by surprise. Soft-fails with a loud warning when offline rather than
 # blocking the apply, and uses --ff-only so it can never leave a half-done

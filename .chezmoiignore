@@ -4,6 +4,7 @@
 # NOT the source name: a source file `dot_aws/credentials` is the target
 # `.aws/credentials`. Ignoring only stops chezmoi from picking a file up; it
 # never un-manages one that is already tracked (use `chezmoi forget` + `git rm`).
+# Verify any change with: chezmoi ignored
 # ============================================================================
 .config/zsh/secrets.zsh
 .config/zsh/*secret*
@@ -21,22 +22,26 @@
 *.pem
 *.p12
 
+# ============================================================================
+# Repo-only files — documentation and helper binaries belong in the repo, not
+# in $HOME. `README.md` at the source root would otherwise deploy to ~/README.md
+# and `bin/` to ~/bin (where a 42 MB copy of the chezmoi binary used to sit).
+# ============================================================================
+README.md
+bin/
+bin/**
+
+# ============================================================================
 # Machine-specific state
+# ============================================================================
 .local/share/zinit/**/cache/**
 .local/state/**
 .cache/**
 
-# OS-specific binaries (managed externally)
+# OS-specific binaries (installed by the bootstrap script / package manager)
 .local/bin/*
 
-# State directory - machine-specific by default
-.local/state/**
-!local/state/atuin/**  # ← Uncomment ONLY if you want Atuin history synced
-
-# Cache - never sync
-.cache/**
-
-# Local data managed externally
+# Local data managed externally (zinit and fzf are chezmoiexternal targets)
 .local/share/**
-!.local/share/zinit/**  # ← Keep if managing zinit via chezmoiexternal
+!.local/share/zinit/**
 !.local/share/fzf/**

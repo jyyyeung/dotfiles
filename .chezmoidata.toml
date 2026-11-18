@@ -1,6 +1,7 @@
-# ~/.local/share/chezmoi/.chezmoidata.toml
+# Tooling defaults shared by every template.
+#
+# This file is DATA, not a template: chezmoi does not expand {{ }} here, so a
+# value like "{{ .chezmoi.homeDir }}/.local/state" would be stored literally.
+# Reference these as {{ .editor }} — and compute anything path-shaped in the
+# template that uses it.
 editor = "nvim"
-
-# XDG directories (for template use)
-stateDir= "{{ .chezmoi.homeDir }}/.local/state"
-cacheDir= "{{ .chezmoi.homeDir }}/.cache"

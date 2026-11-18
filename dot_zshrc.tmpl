@@ -104,9 +104,13 @@ if [[ -d "$ZINIT_HOME" ]]; then
     zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview 'git diff --color=always $word'
   fi
 
-  # Completions
-  zinit ice wait"1" lucid atload"zicompinit; zicdreplay"; zinit light zsh-users/zsh-completions
+  # Completions (adds fpath entries only; compinit is run once below, after this
+  # block, so the plugin's directories are already on $fpath when it scans)
+  zinit ice wait"1" lucid atload"zicdreplay"; zinit light zsh-users/zsh-completions
 fi
+
+# Single compinit call for the whole shell: needs zsh-completions fpath above.
+(( $+functions[_dotfiles_compinit] )) && _dotfiles_compinit
 
 # ============================================================================
 # Tool Initializations (only if installed)
