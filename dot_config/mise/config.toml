@@ -3,6 +3,44 @@ neovim = "latest"
 pnpm = "latest"
 usage = "latest"
 
+# ---------------------------------------------------------------------------
+# Language toolchains.
+#
+# These replace the legacy ~/.tool-versions file, which is deleted on every
+# machine by .chezmoiremove. asdf names differ from mise names, so the old
+# entries map as: nodejs -> node, golang -> go, neovim nightly -> neovim.
+# The old pins were stale (java pointed at a Loom early-access build that
+# upstream no longer publishes), so everything here tracks a current release
+# instead of being copied verbatim.
+# ---------------------------------------------------------------------------
+
+# Node 24 is the current LTS line. Pinned to the major only, so patch releases
+# come in with `mise upgrade` and a future major can never arrive by surprise.
+node = "24"
+
+# Deliberately NOT "latest": python majors land roughly yearly and resolving
+# to the newest one would move this machine without anyone asking. 3.13 is new
+# enough for current wheels and close enough to the old 3.10 pin that existing
+# code still runs. Change the number to opt into a newer line.
+python = "3.13"
+
+# Pinned to the major.minor line rather than "latest": mise treats a bare
+# "latest" as satisfied by whatever is already installed, so the Mac would
+# have stayed on go 1.24.9 while a fresh machine fetched 1.27.x. A version
+# prefix makes both machines converge on the same line.
+go = "1.27"
+
+# rustup stable channel, not a frozen point release.
+rust = "stable"
+
+# Was `direnv system` in ~/.tool-versions. `system` only works when the distro
+# or brew happens to ship direnv, so it is managed like everything else now.
+direnv = "latest"
+
+# Was openjdk-24-loom+4-42, an early-access build that is gone from the CDN.
+# Corretto 25 is a supported LTS distribution of the same JDK generation.
+java = "corretto-25"
+
 # uv/uvx: the shims exist on this machine but no global version was set, so
 # every shell start printed "mise ERROR No version is set for shim: uv".
 # Pinning it here gives the shim a version to resolve (and keeps Linux in sync).

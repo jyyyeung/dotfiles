@@ -10,5 +10,12 @@
 .config/nvim/lua/plugins/mason.lua
 .config/nvim/lua/plugins/none-ls.lua
 .config/nvim/lua/plugins/treesitter.lua
+
+# 2026 audit: asdf-style tool pins retired into the managed mise config
+# (dot_config/mise/config.toml). Leaving this file behind would let
+# ~/.tool-versions keep overriding or shadowing the managed pins, so every
+# machine deletes it on the next apply. The pins are now shared, not per-host.
+.tool-versions
+
 # NOTE: a target listed here is skipped if .chezmoiignore also matches it
 # (apply never touches ignored paths) — those have to be removed by hand.

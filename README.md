@@ -40,6 +40,7 @@ source `dot_netrc` is target `.netrc`.
 | `dot_config/tmux/` | tmux config (Nord palette applied over catppuccin) |
 | `dot_config/nvim/` | AstroNvim v6, Nord colorscheme |
 | `dot_config/{ghostty,starship,mise}` | terminal, prompt, toolchain pins |
+| `dot_config/mise/config.toml` | the only place tool versions are pinned — the legacy `~/.tool-versions` is deleted by `.chezmoiremove` |
 
 Machine-local settings that should stay out of git go in `~/.zshrc.local`
 (sourced by `dot_zshrc.tmpl`).
