@@ -182,11 +182,18 @@ fi
 
 if have mise || [[ "${HAVE_MISE:-0}" == 1 ]]; then
   log "installing tools from dot_config/mise/config.toml"
-  run mise install --yes
+  # NOTE: this must not be fatal. `set -e` + a bare `mise install` used to abort
+  # the whole script on the first failing tool (a dead java build, a python
+  # release with no attestations), so the fd/bat links below and the final
+  # report never ran and the user saw only `chezmoi: install-packages.sh: exit
+  # status 1`. One bad pin must not cost the rest of the bootstrap.
   if (( DRY_RUN )); then
-    :
-  elif ! mise install --yes >/dev/null 2>&1; then
-    warn "mise install reported errors — re-run: mise install --verbose"
+    printf '   [dry-run] mise install --yes\n'
+  elif mise install --yes; then
+    log "mise tools installed"
+  else
+    warn "mise install failed for at least one tool (see the errors above)"
+    INCOMPLETE+="  mise install --verbose   # then fix or remove the failing pin\n"
   fi
 else
   INCOMPLETE+="  curl -fsSL https://mise.run | sh   # then: mise install\n"
@@ -196,6 +203,7 @@ fi
 # Post-checks that are cheap and catch the two silent breakages we hit before:
 # Debian's fd/bat binary names, and a tmux too old for allow-passthrough.
 # ---------------------------------------------------------------------------
+mkdir -p "$HOME/.local/bin"
 if have fdfind && ! have fd; then
   log "linking fd -> fdfind (Debian binary name)"
   run ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd"
@@ -212,11 +220,14 @@ if have tmux; then
   esac
 fi
 
-# ---------------------------------------------------------------------------
+# Exit non-zero when anything is missing: chezmoi re-runs a run_once_ script
+# whose contents have not run SUCCESSFULLY before, so a failed bootstrap retries
+# on the next apply instead of needing a manual state-bucket reset.
 if [[ -n "$INCOMPLETE" ]]; then
-  warn "SYSTEM LAYER INCOMPLETE — run these by hand:"
+  warn "SYSTEM LAYER INCOMPLETE — nothing above is fatal for chezmoi, but fix it:"
   printf '%b' "$INCOMPLETE" >&2
-  warn "then re-run: chezmoi state delete-bucket --bucket=scriptState && chezmoi apply"
+  warn "then run: chezmoi apply   (this script retries while it fails)"
+  exit 1
 else
   log "✅ system layer complete — restart your shell to pick up PATH"
 fi
