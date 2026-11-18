@@ -82,12 +82,21 @@
 [credential]
 {{- if eq .chezmoi.os "darwin" }}
   helper = osxkeychain
-{{- else if eq .chezmoi.os "linux" }}
-  # `cache` is built into git and needs no extra packages; swap for
-  # `libsecret` once gnome-keyring / libsecret-1-0 is installed.
-  helper = cache --timeout=86400
 {{- else }}
-  helper = cache --timeout=86400
+{{- /* A helper git cannot find is FATAL (it does not fall through to the next
+       one), so the libsecret helper is detected here, on the machine doing the
+       apply, instead of being assumed. Its binary lives in git's exec-path and
+       is NOT on PATH, and only some distros ship it, so glob is the test. */}}
+{{- $execPath := output "git" "--exec-path" | trim }}
+{{- if glob (printf "%s/git-credential-libsecret" $execPath) }}
+  # Credentials live in the desktop keyring (GNOME Keyring / KWallet via
+  # Secret Service): encrypted at rest, survives reboots.
+  helper = libsecret
+{{- else }}
+  # No libsecret helper on this box, so fall back to git's own in-memory
+  # cache. No plaintext file on disk, but expect a prompt after each reboot.
+  helper = cache --timeout=604800
+{{- end }}
 {{- end }}
 
 # Kept so git stops re-writing this block after every apply. Narrow it to the
