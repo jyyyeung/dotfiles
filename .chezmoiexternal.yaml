@@ -33,6 +33,12 @@
   url: "https://github.com/omerxx/tmux-sessionx.git"
   refreshPeriod: "168h"
 
+# agent switcher (added on the Linux box; declaratively cloned here too)
+".tmux/plugins/tmux-agent-switcher":
+  type: "git-repo"
+  url: "https://github.com/Ymirke/tmux-agent-switcher.git"
+  refreshPeriod: "168h"
+
 # Tmux plugins used by tmux.conf.tmpl
 ".tmux/plugins/tmux-sensible":
   type: "git-repo"
