@@ -1,11 +1,32 @@
 [tools]
-gitleaks = "latest"
 neovim = "latest"
 pnpm = "latest"
 usage = "latest"
 
-# gitleaks is here for the chezmoi git hooks (pre-commit + pre-push secret
-# scan). Installing it through mise keeps macOS and Linux on the same path;
-# the hooks fall back to internal patterns if it is missing, so a failed
-# install degrades coverage instead of breaking commits.
-# Full coverage: mise install gitleaks
+# gitleaks backs the chezmoi git hooks (pre-commit + pre-push secret scan).
+# Installing it through mise keeps macOS and Linux on the same path; the hooks
+# fall back to internal patterns if it is missing, so a failed install degrades
+# coverage instead of breaking commits.
+gitleaks = "latest"
+
+# ---------------------------------------------------------------------------
+# Linux toolchain — installed by `mise install`, skipped on macOS via the `os`
+# filter because Homebrew already provides the same binaries there.
+#
+# Why aqua and not apt: these are exactly the tools Debian/Ubuntu either does
+# not package (eza, starship, lazygit, yq, sccache, delta as `git-delta`) or
+# packages too old. Pinning them here means one `mise install` replaces every
+# "add this PPA / curl | sh this installer" step the old bootstrap needed.
+# ---------------------------------------------------------------------------
+"aqua:eza-community/eza" = { version = "latest", os = ["linux"] }
+"aqua:sharkdp/bat" = { version = "latest", os = ["linux"] }
+"aqua:sharkdp/fd" = { version = "latest", os = ["linux"] }
+"aqua:BurntSushi/ripgrep" = { version = "latest", os = ["linux"] }
+"aqua:junegunn/fzf" = { version = "latest", os = ["linux"] }
+"aqua:ajeetdsouza/zoxide" = { version = "latest", os = ["linux"] }
+"aqua:starship/starship" = { version = "latest", os = ["linux"] }
+"aqua:dandavison/delta" = { version = "latest", os = ["linux"] }
+"aqua:jesseduffield/lazygit" = { version = "latest", os = ["linux"] }
+"aqua:jqlang/jq" = { version = "latest", os = ["linux"] }
+"aqua:mikefarah/yq" = { version = "latest", os = ["linux"] }
+"aqua:mozilla/sccache" = { version = "latest", os = ["linux"] }

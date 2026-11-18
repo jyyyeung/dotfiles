@@ -1,120 +1,222 @@
-#!/bin/bash
-# run_once_install_cli_tools.sh
-# Idempotent installer for core terminal tools
-# Safe to run multiple times; skips already-installed packages
+#!/usr/bin/env bash
+# run_once_install-packages.sh — system layer only.
+#
+# What this script deliberately does NOT do: install the CLI toolchain. eza,
+# bat, fd, ripgrep, fzf, zoxide, starship, delta, lazygit, jq, yq, sccache,
+# neovim and gitleaks all resolve from `dot_config/mise/config.toml`, so macOS
+# and Linux get the same versions from one file. Here we only install what a
+# package manager has to provide (git, zsh, tmux, a C toolchain, CA certs) and
+# mise itself.
+#
+# Design rules:
+#   * Never prompt. `chezmoi apply` can run without a TTY; a hidden password
+#     prompt hangs the entire apply. We probe `sudo -n` and print the exact
+#     commands to run by hand when escalation is unavailable.
+#   * Never write files chezmoi does not manage (the old version appended
+#     `brew shellenv` to ~/.zprofile; dot_zshrc.tmpl owns PATH now).
+#   * Idempotent: every step is guarded by a command probe, so a re-run after
+#     `chezmoi state delete-bucket --bucket=scriptState` is cheap.
+#   * `--dry-run` prints every action instead of performing it.
 
-set -e
+set -euo pipefail
 
-log() { echo "🔧 $*"; }
-warn() { echo "⚠️  $*" >&2; }
+DRY_RUN=0
+[[ "${1:-}" == "--dry-run" ]] && DRY_RUN=1
 
-ensure_brew_path() {
-  if [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-  elif [[ -x /opt/homebrew/bin/brew ]]; then
+log()  { printf '🔧 %s\n' "$*"; }
+warn() { printf '⚠️  %s\n' "$*" >&2; }
+have() { command -v "$1" >/dev/null 2>&1; }
+run()  { if (( DRY_RUN )); then printf '   [dry-run] %s\n' "$*"; else "$@"; fi; }
+
+OS="$(uname -s)"
+INCOMPLETE=""
+
+# ---------------------------------------------------------------------------
+# Privilege probe — no password prompt, ever.
+# ---------------------------------------------------------------------------
+SUDO=""
+if [[ "$(id -u)" -ne 0 ]]; then
+  if sudo -n true 2>/dev/null; then
+    SUDO="sudo -n"
+  else
+    SUDO=""
+  fi
+fi
+
+# $SUDO is intentionally unquoted at call sites: it is either empty or
+# two words ("sudo -n").
+need_root() {
+  if [[ -z "$SUDO" && "$(id -u)" -ne 0 ]]; then
+    return 1
+  fi
+  return 0
+}
+
+# ---------------------------------------------------------------------------
+# Package manager detection
+# ---------------------------------------------------------------------------
+PM=""
+if [[ "$OS" == "Darwin" ]]; then
+  PM="brew"
+elif have apt-get; then
+  PM="apt"
+elif have dnf; then
+  PM="dnf"
+elif have pacman; then
+  PM="pacman"
+elif have zypper; then
+  PM="zypper"
+fi
+
+case "$PM" in
+  apt)    BASE_PKGS=(git curl ca-certificates unzip zsh tmux keychain build-essential) ;;
+  dnf)    BASE_PKGS=(git curl ca-certificates unzip zsh tmux keychain gcc gcc-c++ make) ;;
+  pacman) BASE_PKGS=(git curl ca-certificates unzip zsh tmux keychain base-devel) ;;
+  zypper) BASE_PKGS=(git curl ca-certificates unzip zsh tmux gcc gcc-c++ make) ;;
+  brew)   BASE_PKGS=(git curl zsh tmux keychain) ;;
+  *)      BASE_PKGS=() ;;
+esac
+
+pkg_command() {
+  # Echo the install command for the given packages, for the detected PM.
+  case "$PM" in
+    apt)    echo "sudo DEBIAN_FRONTEND=noninteractive apt-get install -y $*" ;;
+    dnf)    echo "sudo dnf install -y $*" ;;
+    pacman) echo "sudo pacman -S --needed --noconfirm $*" ;;
+    zypper) echo "sudo zypper --non-interactive install $*" ;;
+    brew)   echo "brew install $*" ;;
+    *)      echo "# no known package manager for $OS" ;;
+  esac
+}
+
+pkg_installed() {
+  case "$1" in
+    build-essential|base-devel) have cc || have gcc ;;
+    keychain)                   have keychain ;;
+    *)                          have "$1" ;;
+  esac
+}
+
+# ---------------------------------------------------------------------------
+# macOS: Homebrew itself
+# ---------------------------------------------------------------------------
+if [[ "$PM" == "brew" ]] && ! have brew; then
+  if [[ -x /opt/homebrew/bin/brew ]]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
   elif [[ -x /usr/local/bin/brew ]]; then
     eval "$(/usr/local/bin/brew shellenv)"
   fi
-}
+fi
 
-pkg_installed() {
-  local pkg="$1"
-  case "$pkg" in
-    git-delta|delta) command -v delta &>/dev/null ;;
-    fd|fd-find) command -v fd &>/dev/null || command -v fdfind &>/dev/null ;;
-    ripgrep) command -v rg &>/dev/null ;;
-    bat) command -v bat &>/dev/null || command -v batcat &>/dev/null ;;
-    *) command -v "$pkg" &>/dev/null ;;
+if [[ "$OS" == "Darwin" ]] && ! have brew; then
+  log "Homebrew missing — installing (this needs an admin password)"
+  if (( DRY_RUN )); then
+    printf '   [dry-run] NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"\n'
+  elif ! NONINTERACTIVE=1 /bin/bash -c \
+      "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; then
+    warn "Homebrew install failed (needs interactive sudo)"
+    INCOMPLETE+="  /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"\n"
+  fi
+fi
+
+# Linuxbrew, when present, is used only for the base packages it already has;
+# the toolchain comes from mise.
+if [[ "$OS" == "Linux" && -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
+
+# ---------------------------------------------------------------------------
+# Base packages
+# ---------------------------------------------------------------------------
+install_base() {
+  local missing=()
+  local p
+  for p in "${BASE_PKGS[@]}"; do
+    pkg_installed "$p" || missing+=("$p")
+  done
+  MISSING_BASE=(${missing[@]:-})
+
+  if (( ${#missing[@]} == 0 )); then
+    log "base packages already present"
+    return 0
+  fi
+
+  if ! need_root && [[ "$PM" != "brew" ]]; then
+    return 1
+  fi
+
+  log "installing base packages: ${missing[*]}"
+  case "$PM" in
+    apt)
+      run $SUDO env DEBIAN_FRONTEND=noninteractive apt-get update -qq
+      run $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y "${missing[@]}"
+      ;;
+    dnf)    run $SUDO dnf install -y "${missing[@]}" ;;
+    pacman) run $SUDO pacman -S --needed --noconfirm "${missing[@]}" ;;
+    zypper) run $SUDO zypper --non-interactive install "${missing[@]}" ;;
+    brew)   run brew install "${missing[@]}" ;;
+    *)      return 1 ;;
   esac
 }
 
-brew_writable() {
-  ensure_brew_path
-  command -v brew &>/dev/null || return 1
-  local prefix
-  prefix="$(brew --prefix 2>/dev/null)" || return 1
-  [[ -w "$prefix" ]]
-}
-
-install_via_brew() {
-  local pkg
-  ensure_brew_path
-  for pkg in "$@"; do
-    pkg_installed "$pkg" && continue
-    brew list "$pkg" &>/dev/null || brew install "$pkg"
-  done
-}
-
-# macOS: Homebrew
-if [[ "$(uname -s)" == "Darwin" ]] && ! command -v brew &>/dev/null; then
-  log "Installing Homebrew..."
-  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  ensure_brew_path
-  echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+if ! install_base; then
+  warn "cannot escalate without a password — skipping system packages"
+  INCOMPLETE+="  $(pkg_command "${MISSING_BASE[@]}")\n"
 fi
 
-MACOS_PACKAGES=(
-  zoxide starship eza bat ripgrep fd fzf jq yq httpie delta lazygit
-  mise keychain zsh-syntax-highlighting zsh-autosuggestions
-)
-
-BREW_PACKAGES=(
-  zoxide starship eza bat ripgrep fd fzf jq yq httpie git-delta lazygit
-  mise keychain
-)
-
-# Packages generally available via apt on Debian/Ubuntu
-APT_PACKAGES=(
-  zoxide bat ripgrep fd-find fzf jq httpie keychain
-)
-
-if [[ "$(uname -s)" == "Darwin" ]]; then
-  log "Installing macOS packages via Homebrew..."
-  install_via_brew "${MACOS_PACKAGES[@]}"
-elif [[ "$(uname -s)" == "Linux" ]]; then
-  if brew_writable; then
-    log "Installing Linux packages via Homebrew..."
-    install_via_brew "${BREW_PACKAGES[@]}"
+# ---------------------------------------------------------------------------
+# mise — the actual toolchain
+# ---------------------------------------------------------------------------
+export PATH="$HOME/.local/bin:$PATH"
+if ! have mise; then
+  log "installing mise (user-space, no sudo)"
+  if (( DRY_RUN )); then
+    printf '   [dry-run] curl -fsSL https://mise.run | sh\n'
+  elif curl -fsSL https://mise.run | sh; then
+    HAVE_MISE=1
   else
-    log "Installing available Linux packages via apt..."
-    sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
-    for pkg in "${APT_PACKAGES[@]}"; do
-      case "$pkg" in
-        fd-find) pkg_installed fd || sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "$pkg" ;;
-        bat) pkg_installed bat || sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "$pkg" ;;
-        *) pkg_installed "$pkg" || sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "$pkg" ;;
-      esac
-    done
+    warn "mise install failed"
+    HAVE_MISE=0
   fi
-
-  if ! pkg_installed starship; then
-    log "Installing starship via upstream installer..."
-    curl -sS https://starship.rs/install.sh | sh -s -- -y
-  fi
-
-  if ! pkg_installed fzf; then
-    log "Installing fzf via git..."
-    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-    ~/.fzf/install --all --no-bash --no-fish
-  fi
-
-  for missing in eza lazygit delta yq; do
-    if ! pkg_installed "$missing"; then
-      warn "$missing not installed (not in default apt repos; use Homebrew as the target user or install manually)"
-    fi
-  done
 fi
 
-ensure_brew_path
-if ! command -v mise &>/dev/null; then
-  log "Installing mise..."
-  curl https://mise.jdx.dev/install.sh | sh
+if have mise || [[ "${HAVE_MISE:-0}" == 1 ]]; then
+  log "installing tools from dot_config/mise/config.toml"
+  run mise install --yes
+  if (( DRY_RUN )); then
+    :
+  elif ! mise install --yes >/dev/null 2>&1; then
+    warn "mise install reported errors — re-run: mise install --verbose"
+  fi
+else
+  INCOMPLETE+="  curl -fsSL https://mise.run | sh   # then: mise install\n"
 fi
 
-if command -v mise &>/dev/null; then
-  log "Installing mise completion helper (usage)..."
-  mise use -g usage 2>/dev/null || warn "mise use -g usage failed; tab-complete for mise needs it"
+# ---------------------------------------------------------------------------
+# Post-checks that are cheap and catch the two silent breakages we hit before:
+# Debian's fd/bat binary names, and a tmux too old for allow-passthrough.
+# ---------------------------------------------------------------------------
+if have fdfind && ! have fd; then
+  log "linking fd -> fdfind (Debian binary name)"
+  run ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd"
+fi
+if have batcat && ! have bat; then
+  log "linking bat -> batcat (Debian binary name)"
+  run ln -sf "$(command -v batcat)" "$HOME/.local/bin/bat"
 fi
 
-log "✅ CLI tools installation complete"
+if have tmux; then
+  tmux_ver="$(tmux -V 2>/dev/null | awk '{print $2}')"
+  case "$tmux_ver" in
+    [0-2].*|3.[0-2]|3.[0-2]?*) warn "tmux $tmux_ver is older than 3.3 — 'allow-passthrough' is unsupported; build from source or use mise" ;;
+  esac
+fi
+
+# ---------------------------------------------------------------------------
+if [[ -n "$INCOMPLETE" ]]; then
+  warn "SYSTEM LAYER INCOMPLETE — run these by hand:"
+  printf '%b' "$INCOMPLETE" >&2
+  warn "then re-run: chezmoi state delete-bucket --bucket=scriptState && chezmoi apply"
+else
+  log "✅ system layer complete — restart your shell to pick up PATH"
+fi

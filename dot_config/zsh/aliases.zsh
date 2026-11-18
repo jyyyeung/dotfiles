@@ -45,6 +45,9 @@ fi
 
 if (( $+commands[fd] )); then
   alias find='fd'
+elif (( $+commands[fdfind] )); then
+  # Debian/Ubuntu ship fd as `fdfind`
+  alias find='fdfind'
 fi
 
 # Git shortcuts

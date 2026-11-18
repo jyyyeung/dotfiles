@@ -43,7 +43,14 @@ setopt interactive_comments
 export PATH="$HOME/.local/bin:$PATH"
 {{- if eq .chezmoi.os "darwin" }}
 export PATH="/opt/homebrew/bin:$PATH"
+{{- else if eq .chezmoi.os "linux" }}
+# Linuxbrew is optional; the bootstrap script only uses it when it already exists.
+[[ -d /home/linuxbrew/.linuxbrew/bin ]] && export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
 {{- end }}
+# mise shims come first so tools installed by `mise install` are found by
+# non-interactive shells too (scripts, git hooks, cron) — `mise activate` only
+# covers interactive sessions.
+export PATH="$HOME/.local/share/mise/shims:$PATH"
 
 # ============================================================================
 # OS Detection Variable (for aliases/functions)
