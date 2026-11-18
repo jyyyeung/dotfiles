@@ -69,7 +69,9 @@ elif have zypper; then
 fi
 
 case "$PM" in
-  apt)    BASE_PKGS=(git curl ca-certificates unzip zsh tmux keychain build-essential) ;;
+  # libsecret-tools on apt: Debian/Ubuntu do not package git-credential-libsecret,
+  # so secret-tool is how the dotfiles' credential helper reaches the keyring.
+  apt)    BASE_PKGS=(git curl ca-certificates unzip zsh tmux keychain build-essential libsecret-tools) ;;
   dnf)    BASE_PKGS=(git curl ca-certificates unzip zsh tmux keychain gcc gcc-c++ make) ;;
   pacman) BASE_PKGS=(git curl ca-certificates unzip zsh tmux keychain base-devel) ;;
   zypper) BASE_PKGS=(git curl ca-certificates unzip zsh tmux gcc gcc-c++ make) ;;

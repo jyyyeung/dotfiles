@@ -40,6 +40,8 @@ bin/**
 
 # OS-specific binaries (installed by the bootstrap script / package manager)
 .local/bin/*
+# ...except our own git credential helper, which is a plain script we ship.
+!.local/bin/git-credential-secret
 
 # Local data managed externally (zinit and fzf are chezmoiexternal targets)
 .local/share/**

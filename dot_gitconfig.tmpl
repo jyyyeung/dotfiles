@@ -84,17 +84,29 @@
   helper = osxkeychain
 {{- else }}
 {{- /* A helper git cannot find is FATAL (it does not fall through to the next
-       one), so the libsecret helper is detected here, on the machine doing the
-       apply, instead of being assumed. Its binary lives in git's exec-path and
-       is NOT on PATH, and only some distros ship it, so glob is the test. */}}
+       one), so the helper is detected here, on the machine doing the apply,
+       instead of being assumed.
+
+       Order of preference on Linux:
+         1. git-credential-libsecret — ships with git on Fedora/Arch, but NOT on
+            Debian/Ubuntu, and it is not on PATH (git's exec-path holds it).
+         2. our own git-credential-secret, a shell script that stores in the
+            same keyring via secret-tool (apt: libsecret-tools). Referenced by
+            absolute path so it works even when ~/.local/bin is not on PATH,
+            e.g. for GUI git clients.
+         3. git's in-memory cache: no plaintext file, but a prompt after reboot. */}}
 {{- $execPath := output "git" "--exec-path" | trim }}
 {{- if glob (printf "%s/git-credential-libsecret" $execPath) }}
   # Credentials live in the desktop keyring (GNOME Keyring / KWallet via
   # Secret Service): encrypted at rest, survives reboots.
   helper = libsecret
+{{- else if lookPath "secret-tool" }}
+  # No libsecret helper on this box (Debian/Ubuntu do not package it), so use
+  # the dotfiles' own keyring helper instead.
+  helper = {{ .chezmoi.homeDir }}/.local/bin/git-credential-secret
 {{- else }}
-  # No libsecret helper on this box, so fall back to git's own in-memory
-  # cache. No plaintext file on disk, but expect a prompt after each reboot.
+  # No keyring access at all, so fall back to git's own in-memory cache.
+  # No plaintext file on disk, but expect a prompt after each reboot.
   helper = cache --timeout=604800
 {{- end }}
 {{- end }}
