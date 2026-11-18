@@ -32,6 +32,11 @@ SAVEHIST=10000
 HISTSIZE=10000
 setopt SHARE_HISTORY HIST_EXPIRE_DUPS_FIRST HIST_IGNORE_DUPS HIST_VERIFY
 
+# Without this, pasting a block that contains `# comment` lines runs `#` as a
+# command: "zsh: command not found: #". Interactive-only, so it never affects
+# scripts.
+setopt interactive_comments
+
 # ============================================================================
 # PATH – consistent prepend order
 # ============================================================================
