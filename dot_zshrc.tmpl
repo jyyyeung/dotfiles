@@ -190,3 +190,14 @@ export OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS=true
 if [[ "$OSTYPE" == darwin* && -f "${HOME}/.iterm2_shell_integration.zsh" ]]; then
   source "${HOME}/.iterm2_shell_integration.zsh"
 fi
+
+# pi-fff: never index $HOME when a session starts there (huge tree, slow boot)
+export FFF_ENABLE_HOME_SCAN=0
+
+# ============================================================================
+# herdr-automatic-rename: name tabs from the foreground command immediately
+# Plugin: qu8n/herdr-automatic-rename (installed via herdr plugin install)
+# ============================================================================
+for _f in ${HOME}/.config/herdr/plugins/github/herdr-automatic-rename-*/shell/hook.zsh(N); do
+source $_f; break
+done
