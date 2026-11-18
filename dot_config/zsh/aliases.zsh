@@ -21,12 +21,16 @@ alias du='du -h --max-depth=1 2>/dev/null || du -h -d 1'   # Linux vs macOS
 
 # Modern replacements (with fallbacks)
 if (( $+commands[eza] )); then
-  alias ls='eza --icons --group-directories-first --classify'
-  alias l='eza -lbF --icons'
-  alias ll='eza -lbGF --icons'
-  alias la='eza -abGF --icons'
-  alias lt='eza --tree --icons'
-  alias lgs='eza -lbGF --icons --git'  # git-aware long listing (`lg` is lazygit, see below)
+  # NOTE: eza's --classify/--icons take an OPTIONAL value, so a bare `--icons`
+  # or `-F` followed by a path swallows the path:
+  #   `ls /tmp` -> error: invalid value '/tmp' for '--classify [<WHEN>]'
+  # Always spell them with =auto / =always so a path can follow.
+  alias ls='eza --icons=auto --group-directories-first --classify=always'
+  alias l='eza -lb --icons=auto --classify=always'
+  alias ll='eza -lbG --icons=auto --classify=always'
+  alias la='eza -abG --icons=auto --classify=always'
+  alias lt='eza --tree --icons=auto'
+  alias lgs='eza -lbG --icons=auto --classify=always --git'  # git-aware long listing (`lg` is lazygit, see below)
 else
   alias ls='ls -G'  # macOS color
   alias l='ls -lA'
